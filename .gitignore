@@ -1,0 +1,14 @@
+esp/*
+trainingv3/*
+.idea/vcs.xml
+.idea/*
+.idea\*
+
+
+
+/.idea
+.idea/vcs.xml
+/__pycache__
+/esp
+esp_draw_pyglet.py
+/.idea
