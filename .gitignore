@@ -1,4 +1,5 @@
 esp/*
+
 trainingv3/*
 .idea/vcs.xml
 .idea/*
@@ -10,5 +11,5 @@ trainingv3/*
 .idea/vcs.xml
 /__pycache__
 /esp
-esp_draw_pyglet.py
+
 /.idea
