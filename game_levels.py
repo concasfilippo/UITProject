@@ -507,15 +507,25 @@ class Exercise_FollowPath(SceneTemplate):
 
             #c'è un bug per cui a volte un elemento di checkpoint interaction è
             #presente nella lista mentre non dovrebbe esserci
-            #intersezioni_player_checkpoint = [elemento for elemento in lista1 if elemento not in lista2]
+            intersezioni_pla_check = [elemento for elemento in checkpoints if elemento not in checkpoint_intersection]
 
 
-            flag = False
-            for i in range(0, len(player_intersection)):
-                if checkpoint_intersection[1] == player_intersection[i]:
-                    flag = True
-            if not flag:
-                checkpoint_intersection.pop(1)
+
+            # Crea una copia di lista3 per iterare in modo sicuro
+            player_intersection_sicuro = player_intersection.copy()
+
+            # Itera su lista1 e verifica la condizione
+            for elemento in intersezioni_pla_check:
+                if elemento not in player_intersection:  # Se l'elemento di lista1 non è in lista2
+                    index = player_intersection.index(elemento)  # Trova l'indice corrispondente in lista3
+                    player_intersection_sicuro.pop(index)  # Rimuovilo da lista3_filtrata
+
+            # flag = False
+            # for i in range(0, len(player_intersection)):
+            #     if checkpoint_intersection[1] == player_intersection[i]:
+            #         flag = True
+            # if not flag:
+            #     checkpoint_intersection.pop(1)
 
 
 
@@ -534,7 +544,7 @@ class Exercise_FollowPath(SceneTemplate):
             #print(rect_area)
 
             #rect_area = self.rect_width * self.rect_height
-            area_diff = calcola_area_totale(checkpoint_intersection, player_intersection)
+            area_diff = calcola_area_totale(checkpoint_intersection, player_intersection_sicuro)
             #compare_lists(self.path, points)
 
             accuracy = 1 - min(area_diff / rect_area, 1)
