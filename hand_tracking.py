@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+
 import csv
 import copy
 import argparse
@@ -41,7 +43,7 @@ def get_args():
     return args
 
 
-def main_hand_tracking(pipe_conn): #pipe for data streaming
+def main_hand_tracking(pipe_conn=None): #pipe for data streaming
     # Argument parsing #################################################################
     args = get_args()
 
@@ -130,6 +132,15 @@ def main_hand_tracking(pipe_conn): #pipe for data streaming
         image.flags.writeable = True
 
         #  ####################################################################
+        #sending signal
+        #pipe_conn.send([[], image, 0])
+        pipe_conn.send({"landmarks": [None],
+                        "image": image,
+                        "gesture": -1,
+                        "cam_width": cap.get(cv.CAP_PROP_FRAME_WIDTH),
+                        "cam_height": cap.get(cv.CAP_PROP_FRAME_HEIGHT)}
+                       )
+
         if results.multi_hand_landmarks is not None:
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
                                                   results.multi_handedness):
@@ -158,8 +169,16 @@ def main_hand_tracking(pipe_conn): #pipe for data streaming
 
                 # sending data
                 if pipe_conn is not None:
-                    pipe_conn.send([landmark_list, image, hand_sign_id])
+                    pipe_conn.send({"landmarks": landmark_list,
+                                    "image": image,
+                                    "gesture": hand_sign_id,
+                                    "cam_width" : cap.get(cv.CAP_PROP_FRAME_WIDTH),
+                                    "cam_height" : cap.get(cv.CAP_PROP_FRAME_HEIGHT)}
+                    )
+                    #pipe_conn.send([landmark_list, image, hand_sign_id])
 
+                else:
+                    print("PIPE CONN IS NONE")
 
                 if hand_sign_id == 2:  # Ex. Point gesture
                     point_history.append(landmark_list[8])
@@ -198,7 +217,9 @@ def main_hand_tracking(pipe_conn): #pipe for data streaming
         debug_image = draw_info(debug_image, fps, mode, number)
 
         # Screen reflection #############################################################
+        cv.imshow = lambda *args, **kwargs: None
         cv.imshow('Hand Gesture Recognition', debug_image)
+
 
     cap.release()
     cv.destroyAllWindows()

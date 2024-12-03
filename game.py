@@ -63,7 +63,7 @@ def calculate_centroid(polygon):
 
 
 def main(pipe_conn):
-    window = pyglet.window.Window(width=width, height=height)
+    window= pyglet.window.Window(width=width, height=height)
     #window.set_location(80, 60)
     batch = pyglet.graphics.Batch() #list in which put every object to be draw
 
@@ -80,21 +80,24 @@ def main(pipe_conn):
             informazioni = pipe_conn.recv()  # Receiving the hand-tracking data
             global sprites
             window.clear()  # Pulisce la finestra
+            #print(informazioni)
+
 
             #Per il background, prendo l'informazione, la conservo in uno sprite e va nel batch per essere disgenato
-            new_image   = pyglet.image.ImageData(width, height, 'RGB', informazioni[1].tobytes(), pitch=-width * 3)
+            new_image = pyglet.image.ImageData(width, height, 'RGB', informazioni["image"].tobytes(), pitch=-width * 3)
             new_sprite = pyglet.sprite.Sprite(new_image, x=0, y=0, batch=batch, group=bg_group)
             sprites = [new_sprite]  # Aggiungi il nuovo sprite al batch
 
             #Per il disegno del pallino rosso, se viene grabbato
-            if informazioni[2] == 3 or informazioni[2] == 1: #Now grabbing
+            if informazioni["gesture"] == 3 or informazioni["gesture"] == 1:
+            #if informazioni[2] == 3 or informazioni[2] == 1: #Now grabbing
                 #we have to track the following landmarks: 0,4,8,12,16,20
-                landmark0 = tuple(informazioni[0][0])
-                landmark4 = tuple(informazioni[0][4])
-                landmark8 = tuple(informazioni[0][8])
-                landmark12 = tuple(informazioni[0][12])
-                landmark16 = tuple(informazioni[0][16])
-                landmark20 = tuple(informazioni[0][20])
+                landmark0 = tuple(informazioni["landmarks"][0])
+                landmark4 = tuple(informazioni["landmarks"][4])
+                landmark8 = tuple(informazioni["landmarks"][8])
+                landmark12 = tuple(informazioni["landmarks"][12])
+                landmark16 = tuple(informazioni["landmarks"][16])
+                landmark20 = tuple(informazioni["landmarks"][20])
                 polygon = [landmark0, landmark4, landmark8, landmark12, landmark16, landmark20]
                 polygon = list(map(lambda x: (x[0], -x[1] + height), polygon))
                 #print(polygon)
