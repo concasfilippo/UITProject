@@ -749,8 +749,8 @@ class Exercise_FollowPath(SceneTemplate):
 
 class LevelFollowPath1(Exercise_FollowPath):
     def __init__(self, pipe_conn):
-        x_ratio = 1920 / 640
-        y_ratio = 1080 / 480
+        x_ratio = 1 #1920 / 640
+        y_ratio = 1 #1080 / 480
 
         self.polygon_vertices = [
             (100, 350),  # Punto in basso a sinistra con padding
@@ -784,8 +784,8 @@ class LevelFollowPath1(Exercise_FollowPath):
 
 class LevelFollowPath2(Exercise_FollowPath):
     def __init__(self, pipe_conn):
-        x_ratio = 1920 / 640
-        y_ratio = 1080 / 480
+        x_ratio = 1 #1920 / 640
+        y_ratio = 1 #1080 / 480
 
         self.polygon_vertices = [
             (85, 100),  # Punto in basso a sinistra con padding
@@ -821,8 +821,8 @@ class LevelFollowPath2(Exercise_FollowPath):
 
 class LevelFollowPath3(Exercise_FollowPath):
     def __init__(self, pipe_conn):
-        x_ratio = 1920 / 640 * 0.9
-        y_ratio = 1080 / 480 * 0.9
+        x_ratio = 1 #1920 / 640 * 0.9
+        y_ratio = 1 #1080 / 480 * 0.9
 
         self.polygon_vertices = [
             (100, 450),  # B1

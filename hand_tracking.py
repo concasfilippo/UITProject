@@ -217,7 +217,8 @@ def main_hand_tracking(pipe_conn=None): #pipe for data streaming
         debug_image = draw_info(debug_image, fps, mode, number)
 
         # Screen reflection #############################################################
-        cv.imshow = lambda *args, **kwargs: None
+        if not settings.visible_mediapipe_camera:
+            cv.imshow = lambda *args, **kwargs: None
         cv.imshow('Hand Gesture Recognition', debug_image)
 
 
