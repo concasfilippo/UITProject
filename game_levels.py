@@ -529,7 +529,7 @@ class Exercise_FollowPath(SceneTemplate):
         ########## DEFINIZIONE SCHERMATA DI SELEZIONE DIFFICOLTA
         # Rettangolo
         self.chosediff_rect_width = int(width * 0.5)
-        self.chosediff_rect_height = int(height * 0.382)
+        self.chosediff_rect_height = int(height * 0.42)
         self.chosediff_rect_x = (width - self.chosediff_rect_width) // 2
         self.chosediff_rect_y = (height - self.chosediff_rect_height) // 2
         self.chosediff_rectangle = pyglet.shapes.Rectangle(
@@ -538,10 +538,16 @@ class Exercise_FollowPath(SceneTemplate):
         self.chosediff_rectangle.opacity = 180
         self.chosediff_rectangle.visible = True
 
+        self.level_difficulty_chosen = 'facile'
+
         self.chosediff_document = pyglet.text.document.FormattedDocument()
+        #time_level = self.difficulty_times[self.level_difficulty_chosen]
         label_chosediff = (
-            "DIFFICOLTA'\n"  # Titolo grande
-            f"Scegli la difficoltà del gioco, espressa in termini di tempo. Premi [1] per la difficoltà facile, [2] per la media e [3] per la difficile. Premi [ENTER] per iniziare a giocare."
+            f"DIFFICOLTA'\n"  # Titolo grande
+            f"Scegli la difficoltà del gioco, espressa in termini di tempo richiesti per completate il livello. "
+            f"Premi [1] per la difficoltà facile ({self.difficulty_times['facile']} s.), "
+            f"[2] per la media ({self.difficulty_times['medio']} s.) e [3] per la difficile ({self.difficulty_times['difficile']} s.). "
+            f"Premi [ENTER] per iniziare a giocare."
         )
         self.chosediff_document.text = label_chosediff
         # Stile per "SUCCESSO"
@@ -564,7 +570,7 @@ class Exercise_FollowPath(SceneTemplate):
         self.text_layout_chosediff.x = (width - self.text_layout_chosediff.content_width) // 2  # Centra orizzontalmente
         self.text_layout_chosediff.y = (height - self.text_layout_chosediff.content_height) // 2  # Centra verticalmente
         self.text_layout_chosediff.visible = True
-        self.level_difficulty_chosen = 'facile'
+
 
 
 
@@ -954,7 +960,7 @@ class LevelFollowPath1(Exercise_FollowPath):
                          circle_position_y=self.position_y,
                          checkpoint_list=checkpoints,
                          level_title="Esercizio 1",
-                         difficulty_times={'facile': 30.0, 'medio': 20.0, 'difficile': 8.0}
+                         difficulty_times={'facile': 25.0, 'medio': 15.0, 'difficile': 10.0}
         )
 
 
@@ -993,7 +999,7 @@ class LevelFollowPath2(Exercise_FollowPath):
                          circle_position_y=self.position_y,
                          checkpoint_list=checkpoints,
                          level_title="Esercizio 2",
-                         difficulty_times={'facile': 30.0, 'medio': 20.0, 'difficile': 8.0}
+                         difficulty_times={'facile': 30.0, 'medio': 20.0, 'difficile': 15.0}
         )
 
 
@@ -1040,7 +1046,7 @@ class LevelFollowPath3(Exercise_FollowPath):
                          circle_position_y=self.position_y,
                          checkpoint_list=checkpoints,
                          level_title="Esercizio 3",
-                         difficulty_times={'facile': 30.0, 'medio': 20.0, 'difficile': 8.0}
+                         difficulty_times={'facile': 60.0, 'medio': 45.0, 'difficile': 30.0}
         )
 
 
