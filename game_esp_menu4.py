@@ -90,6 +90,6 @@ class Window(pyglet.window.Window):
 
 def main(pipe_conn):
     window = Window(pipe_conn)
-    #window.set_fullscreen(True)
+    window.set_fullscreen(True)
     pyglet.app.run()
     pass

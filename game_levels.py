@@ -18,6 +18,10 @@ from shapely.geometry import Polygon
 
 from game_utils_polygon_triangulation import  *
 from esp_show_lines import *
+from esp_show_lines import *
+
+from decimal import Decimal
+from playsound import playsound
 
 class SceneTemplate:
     """A template with common features for all scenes."""
@@ -345,10 +349,12 @@ class Exercise_FollowPath(SceneTemplate):
                  circle_position_x = 100,
                  circle_position_y  = 240, #posizione di default
                  checkpoint_list = [{'x': 123, 'y':367, 'radius': 15}],
-                 level_title = ""
+                 level_title = "",
+                 difficulty_times = {'facile': 30.0, 'medio':20.0, 'difficile': 8.0}
     ):
         super().__init__(text='')
 
+        self.difficulty_times = difficulty_times
         self.pipe_conn = pipe_conn
 
         self.bg_group = Group(order=0)
@@ -384,7 +390,7 @@ class Exercise_FollowPath(SceneTemplate):
 
         #rettangolo per evidenziare meglio la warning label
         self.warning_box = pyglet.shapes.Rectangle(
-            0, 0, width, 40,
+            0, 0, width, 50,
             color=(50, 50, 50, 180), batch=self.batch, group=self.fg_group)
 
         # Livello, Cronometro, Gesto corrente, warning, <Accuracy>
@@ -396,7 +402,7 @@ class Exercise_FollowPath(SceneTemplate):
             color=(255, 255, 255, 255), x=10, y=height - 40, batch=self.batch, group=self.fg_group)
 
         self.label_instructions = pyglet.text.Label(  # label livello
-            "Premi [P] per iniziare, [R] per ricominciare il livello.", font_name="Arial", font_size=16,
+            "Premi [Enter] per iniziare, [R] per ricominciare il livello, [P] per mettere in pausa.", font_name="Arial", font_size=16,
             color=(255, 255, 255, 255), x=10, y=height - 20, batch=self.batch, group=self.fg_group)
 
         self.label_level = pyglet.text.Label( #label livello
@@ -407,16 +413,18 @@ class Exercise_FollowPath(SceneTemplate):
         self.label_gesture = pyglet.text.Label( #gesto rilevato
             "Gesto rilevato: ", font_name="Arial", font_size=16,
             color=(255, 255, 255, 255), x=10, y=height - 60, batch=self.batch, group=self.fg_group)
+        self.label_gesture.visible = False
 
         self.label_warning = pyglet.text.Label(  # warning outside box
             "", font_name="Arial", font_size=32,
-            color=(255, 100, 100, 255), x=10, y=5, batch=self.batch, group=self.fg_group)
+            color=(255, 100, 100, 255), x=10, y=10, batch=self.batch, group=self.fg_group)
 
         # Accumulate area #TODO refactoring nel menu secondario
         self.path = []  # Lista di coordinate tracciate dal pallino
         self.accuracy_label = pyglet.text.Label(
             "", font_name="Arial", font_size=16,
             color=(255, 255, 255, 255), x=10, y=height - 80, batch=self.batch, group=self.fg_group)
+        self.accuracy_label.visible = False
 
         #checkpoint logic (defined as centroid of each triangle)
         self.checkpoints = checkpoint_list
@@ -449,23 +457,22 @@ class Exercise_FollowPath(SceneTemplate):
         self.success_rectangle.opacity = 180
         self.success_rectangle.visible = False
 
-        self.document = pyglet.text.document.FormattedDocument()
+        self.document_success = pyglet.text.document.FormattedDocument()
         label_winning = (
             "SUCCESSO\n"  # Titolo grande
             f"Hai completato il percorso in {00.0} secondi e con una accuratezza del {float(0.0):.2%}%. "
             "Puoi passare al prossimo livello."
         )
-        self.document.text = label_winning
+        self.document_success.text = label_winning
         # Stile per "SUCCESSO"
-        self.document.set_style(0, 8, {'font_size': 80, 'color': (0, 255, 0, 255), 'bold': True, 'align': 'center',
+        self.document_success.set_style(0, 8, {'font_size': 80, 'color': (0, 255, 0, 255), 'bold': True, 'align': 'center',
                                   'font_name': 'Arial'})
         # Stile per il resto del testo
-        self.document.set_style(8, len(self.document.text),
-                           {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+        self.document_success.set_style(8, len(self.document_success.text),
+                                        {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
         # Usa un layout per il testo
-
-        self.text_layout = pyglet.text.layout.TextLayout(
-            document=self.document,
+        self.text_layout_success = pyglet.text.layout.TextLayout(
+            document=self.document_success,
             width=self.success_rect_x * 2 - 10,  # Larghezza del testo con margini laterali
             # height= self.success_rect_height,
             multiline=True,
@@ -473,9 +480,94 @@ class Exercise_FollowPath(SceneTemplate):
             x=0,  # Margine sinistro
             y=0  # Centra verticalmente il titolo
         )
-        self.text_layout.x = (width - self.text_layout.content_width) // 2  # Centra orizzontalmente
-        self.text_layout.y = (height - self.text_layout.content_height) // 2  # Centra verticalmente
-        self.text_layout.visible = False
+        self.text_layout_success.x = (width - self.text_layout_success.content_width) // 2  # Centra orizzontalmente
+        self.text_layout_success.y = (height - self.text_layout_success.content_height) // 2  # Centra verticalmente
+        self.text_layout_success.visible = False
+
+        ########## DEFINIZIONE SCHERMATA DI PAUSA
+        # Rettangolo
+        self.pause_rect_width = int(width * 0.5)
+        self.pause_rect_height = int(height * 0.382)
+        self.pause_rect_x = (width - self.pause_rect_width) // 2
+        self.pause_rect_y = (height - self.pause_rect_height) // 2
+        self.pause_rectangle = pyglet.shapes.Rectangle(
+            self.pause_rect_x, self.pause_rect_y, self.pause_rect_width, self.pause_rect_height,
+            color=(200, 200, 200), batch=self.batch, group=self.fg_group)
+        self.pause_rectangle.opacity = 180
+        self.pause_rectangle.visible = False
+
+        self.pause_document = pyglet.text.document.FormattedDocument()
+        label_pause = (
+            "PAUSA\n"  # Titolo grande
+            f"Il gioco è attualmente in pausa. Per riprendere l'esecuzione premere [P]. Per resettare invece premere [R]"
+        )
+        self.pause_document.text = label_pause
+        # Stile per "SUCCESSO"
+        self.pause_document.set_style(0, 5,
+                                        {'font_size': 80, 'color': (0, 255, 0, 255), 'bold': True, 'align': 'center',
+                                         'font_name': 'Arial'})
+        # Stile per il resto del testo
+        self.pause_document.set_style(5, len(self.pause_document.text),
+                                        {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+        # Usa un layout per il testo
+        self.text_layout_pause = pyglet.text.layout.TextLayout(
+            document=self.pause_document,
+            width=self.pause_rect_x * 2 - 10,  # Larghezza del testo con margini laterali
+            # height= self.success_rect_height,
+            multiline=True,
+            batch=self.batch, group=self.fg_group,
+            x=0,  # Margine sinistro
+            y=0  # Centra verticalmente il titolo
+        )
+        self.text_layout_pause.x = (width - self.text_layout_pause.content_width) // 2  # Centra orizzontalmente
+        self.text_layout_pause.y = (height - self.text_layout_pause.content_height) // 2  # Centra verticalmente
+        self.text_layout_pause.visible = False
+
+
+        self.enable_player_rendering = True #bolleano per indicare se streammare o meno il player
+
+        ########## DEFINIZIONE SCHERMATA DI SELEZIONE DIFFICOLTA
+        # Rettangolo
+        self.chosediff_rect_width = int(width * 0.5)
+        self.chosediff_rect_height = int(height * 0.382)
+        self.chosediff_rect_x = (width - self.chosediff_rect_width) // 2
+        self.chosediff_rect_y = (height - self.chosediff_rect_height) // 2
+        self.chosediff_rectangle = pyglet.shapes.Rectangle(
+            self.chosediff_rect_x, self.chosediff_rect_y, self.chosediff_rect_width, self.chosediff_rect_height,
+            color=(200, 200, 200), batch=self.batch, group=self.fg_group)
+        self.chosediff_rectangle.opacity = 180
+        self.chosediff_rectangle.visible = True
+
+        self.chosediff_document = pyglet.text.document.FormattedDocument()
+        label_chosediff = (
+            "DIFFICOLTA'\n"  # Titolo grande
+            f"Scegli la difficoltà del gioco, espressa in termini di tempo. Premi [1] per la difficoltà facile, [2] per la media e [3] per la difficile. Premi [ENTER] per iniziare a giocare."
+        )
+        self.chosediff_document.text = label_chosediff
+        # Stile per "SUCCESSO"
+        self.chosediff_document.set_style(0, 11,
+                                      {'font_size': 80, 'color': (0, 255, 255, 255), 'bold': True, 'align': 'center',
+                                       'font_name': 'Arial'})
+        # Stile per il resto del testo
+        self.chosediff_document.set_style(11, len(self.chosediff_document.text),
+                                      {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+        # Usa un layout per il testo
+        self.text_layout_chosediff = pyglet.text.layout.TextLayout(
+            document=self.chosediff_document,
+            width=self.chosediff_rect_x * 2 - 10,  # Larghezza del testo con margini laterali
+            # height= self.success_rect_height,
+            multiline=True,
+            batch=self.batch, group=self.fg_group,
+            x=0,  # Margine sinistro
+            y=0  # Centra verticalmente il titolo
+        )
+        self.text_layout_chosediff.x = (width - self.text_layout_chosediff.content_width) // 2  # Centra orizzontalmente
+        self.text_layout_chosediff.y = (height - self.text_layout_chosediff.content_height) // 2  # Centra verticalmente
+        self.text_layout_chosediff.visible = True
+        self.level_difficulty_chosen = 'facile'
+
+
+
 
 
     def start_game(self):
@@ -493,86 +585,120 @@ class Exercise_FollowPath(SceneTemplate):
             # punti che delineano le posizioni dei checkpoint
             checkpoints = [(d['x'], d['y']) for d in self.checkpoints if 'x' in d and 'y' in d]
 
+            #conversione di ogni elemento con Decimal per evitare problemi di conversione
+            checkpoints = [(Decimal(x), Decimal(y)) for x, y in checkpoints]
+            self.path = [(Decimal(x), Decimal(y)) for x, y in self.path]
+            #print(checkpoints)
+
+
+
             # punti del giocatore + intersezione con la linea ideale
             _ , player_intersection = elimina_codini(checkpoints, self.path)
-            print(f'Player points (elimina code): {player_intersection}')
-            player_intersection = insert_intersections_corrected(checkpoints, list(player_intersection))
-            player_intersection = [(round(x, 5), round(y, 5)) for x, y in player_intersection]
-            print(f'Player points (intersezione): {player_intersection}')
+            #print(f'Player points (elimina code): {player_intersection}')
+            player_intersection = insert_intersections_decimal(checkpoints, list(player_intersection))
+            player_intersection = [(round(x, 1), round(y, 1)) for x, y in player_intersection]
+            #print(f'Path del player + punti di intersezione con il path dei checkpoint (player_intersection): {player_intersection}')
 
             # punti dei checkpoint + intersezioni con l'utente sulla linea ideale
-            checkpoint_intersection = insert_intersections_corrected(player_intersection, checkpoints)
-            checkpoint_intersection = [(round(x, 5), round(y, 5)) for x, y in checkpoint_intersection]
-            print(f'Checkpoints: {checkpoint_intersection}')
+            checkpoint_intersection = insert_intersections_decimal(player_intersection, checkpoints)
+            checkpoint_intersection = [(round(x, 1), round(y, 1)) for x, y in checkpoint_intersection]
+            #print(f'Checkpoints e intersezione con il path del player (checkpoint_intersection): {checkpoint_intersection}')
 
             #c'è un bug per cui a volte un elemento di checkpoint interaction è
             #presente nella lista mentre non dovrebbe esserci
             intersezioni_pla_check = [elemento for elemento in checkpoints if elemento not in checkpoint_intersection]
+            intersezioni_pla_check = [(round(x, 1), round(y, 1)) for x, y in intersezioni_pla_check]
+            #secondo arrootondamento esterno per evitare problemi di python
+            intersezioni_pla_check = aggiorna_punti(checkpoint_intersection, intersezioni_pla_check)
+            #print(f'Intersezioni tra player e checkpoint (aggiorna punti): {intersezioni_pla_check}')
+
+            #forse bisogna fare un ciclo di queste operazioni....
+
+            player_intersection = rimuovi_duplicati_consecutivi(player_intersection)
+            checkpoint_intersection = rimuovi_duplicati_consecutivi(checkpoint_intersection)
+
+            player_intersection_sicuro  = rimuovi_duplicati_consecutivi(aggiorna_punti(checkpoint_intersection, player_intersection))
+            #checkpoint_intersection = rimuovi_duplicati_consecutivi(aggiorna_punti(player_intersection_sicuro, checkpoint_intersection))
+            #print(f'Path player + punti di intersezione dei checkpoints (arrotondati): {player_intersection_sicuro}')
+
+            #ho il sospetto che sia da ciclare un po' di volte perché vada "a convergenza"...
+
+            # Aggiorna la prima lista rimuovendo gli elementi non presenti nella seconda lista
+            checkpoint_intersection = [coppia for coppia in checkpoint_intersection if coppia in player_intersection_sicuro]
 
 
 
-            # Crea una copia di lista3 per iterare in modo sicuro
-            player_intersection_sicuro = player_intersection.copy()
+            # # Crea una copia di lista3 per iterare in modo sicuro
+            #player_intersection_sicuro = player_intersection.copy()
 
-            # Itera su lista1 e verifica la condizione
-            for elemento in intersezioni_pla_check:
-                if elemento not in player_intersection:  # Se l'elemento di lista1 non è in lista2
-                    index = player_intersection.index(elemento)  # Trova l'indice corrispondente in lista3
-                    player_intersection_sicuro.pop(index)  # Rimuovilo da lista3_filtrata
-
-            # flag = False
-            # for i in range(0, len(player_intersection)):
-            #     if checkpoint_intersection[1] == player_intersection[i]:
-            #         flag = True
-            # if not flag:
-            #     checkpoint_intersection.pop(1)
+            #Itera su lista1 e verifica la condizione
+            # for elemento in intersezioni_pla_check:
+            #     if elemento not in player_intersection:  # Se l'elemento di lista1 non è in lista2
+            #         index = player_intersection.index(elemento)  # Trova l'indice corrispondente in lista3
+            #         player_intersection_sicuro.pop(index)  # Rimuovilo da lista3_filtrata
 
 
+            if is_debugging_mode:
+                main(player_intersection, checkpoint_intersection, [], [])
 
 
-
-            main(player_intersection, checkpoint_intersection, [], [])
-
-            # print(f'Player points: {player_intersection}')
-            #print(self.path)
-            #print(checkpoint_intersection)
-            #eliminiamo le coordinate iniziali tracciate: (già fatto)
-
-
-            rect_area = polygon_area(self.polygon) #area totale oltre cui non uscire
+            rect_area = polygon_area_decimal(self.polygon) #area totale oltre cui non uscire
             #print(self.polygon)
             #print(rect_area)
 
             #rect_area = self.rect_width * self.rect_height
-            area_diff = calcola_area_totale(checkpoint_intersection, player_intersection_sicuro)
+            print("Liste di cui viene fatto il confronto:")
+            print(f'Intersezioni tra checkpoint e player: {checkpoint_intersection}')
+            print(f'Intersezioni tra player e checkpoint: {player_intersection_sicuro}')
+
+
+
+            area_diff = calcola_area_totale_decimal(checkpoint_intersection, player_intersection_sicuro)
             #compare_lists(self.path, points)
 
             accuracy = 1 - min(area_diff / rect_area, 1)
 
-            if all(self.checkpoints_reached):
-                self.accuracy_label.text = f"Accuracy: {accuracy:.2%}"
+            # if all(self.checkpoints_reached):
+            #     self.accuracy_label.text = f"Accuracy: {accuracy:.2%}"
+            # else:
+            #     self.accuracy_label.text = f"Accuracy: {0.0:.2%} - Hai dimenticato dei checkpoint"
+
+            # Schermata di vittoria (o sconfitta?? :O )
+            time_level =  self.difficulty_times[self.level_difficulty_chosen]
+            is_win = float(self.timer_label.text[12:]) < time_level
+            print(is_win)
+
+            if is_win:
+                label_winning = (
+                    "SUCCESSO\n"  # Titolo grande
+                    f"Hai completato il percorso in {self.timer_label.text[12:]} secondi e con una accuratezza del {float(accuracy):.2%}!. "
+                    "\nPremi [spazio] per andare al prossimo livello; [Q] Esci; [R] Rigioca il livello attuale."
+                )
+                self.text_layout_success.document.text = label_winning
+                self.document_success.set_style(0, 8, {'font_size': 80, 'color': (0, 255, 0, 255), 'bold': True, 'align': 'center',
+                                               'font_name': 'Arial'})
+                self.document_success.set_style(8, len(self.document_success.text),
+                                                {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                sound = pyglet.media.load('sounds/win.wav', streaming=False)
+                sound.play()
             else:
-                self.accuracy_label.text = f"Accuracy: {0.0:.2%} - Hai dimenticato dei checkpoint"
-
-            # Schermata di vittoria
-
-            label_winning = (
-                "SUCCESSO\n"  # Titolo grande
-                f"Hai completato il percorso in {self.timer_label.text[12:]} secondi e con una accuratezza del {float(accuracy):.2%}!. "
-                "\nPremi [spazio] per andare al prossimo livello; [Q] Esci; [P] Gioca il livello attuale."
-            )
-            self.text_layout.document.text = label_winning
-
-            # Stile per "SUCCESSO"
-            self.document.set_style(0, 8, {'font_size': 80, 'color': (0, 255, 0, 255), 'bold': True, 'align': 'center',
-                                           'font_name': 'Arial'})
-            # Stile per il resto del testo
-            self.document.set_style(8, len(self.document.text),
-                                    {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
-            # Usa un layout per il testo
+                label_winning = (
+                    "RIPROVA!\n"  # Titolo grande
+                    f"Hai completato il percorso in {self.timer_label.text[12:]} secondi, ma avevi solo {time_level} secondi!. "
+                    "\nPremi [spazio] per andare al prossimo livello; [Q] Esci; [R] Rigioca il livello attuale."
+                )
+                self.text_layout_success.document.text = label_winning
+                self.document_success.set_style(0, 8, {'font_size': 80, 'color': (255, 0, 0, 255), 'bold': True,
+                                                       'align': 'center',
+                                                       'font_name': 'Arial'})
+                self.document_success.set_style(8, len(self.document_success.text),
+                                                {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                sound = pyglet.media.load('sounds/lose.wav', streaming=False)
+                sound.play()
 
 
-            self.text_layout.visible = True
+
+            self.text_layout_success.visible = True
             self.success_rectangle.visible = True
 
 
@@ -589,7 +715,7 @@ class Exercise_FollowPath(SceneTemplate):
         self.circle.y = self.circle_y #self.rect_y + self.rect_height // 2
         self.path = []
         self.accuracy_label.text = ""
-        self.text_layout.visible = False
+        self.text_layout_success.visible = False
         self.success_rectangle.visible = False
         #forse è meglio richicamare init... o fare una funzione di initialize...
 
@@ -599,33 +725,18 @@ class Exercise_FollowPath(SceneTemplate):
         #[False, False, False]
         self.checkpoint_shapes[0].color = (0, 0, 200)  # evidenziamo il primo checkpoint da prendere
 
-    def winning_window(self, tempo=1.0, accuratezza = 1.0):
-        """
-            schermata di vittoria
-        :return:
-        """
-        # Rettangolo
-        self.success_rect_width = int(width * 0.5)
-
-
-
-
     def update(self, dt):
         """Aggiorna la posizione del pallino e il timer."""
-        if self.timer_running:
-            self.time_elapsed += dt
-            self.timer_label.text = f"Cronometro: {self.time_elapsed:.1f}"
+        # Riceve dati dal pipe e aggiorna la posizione
+        if self.pipe_conn.poll():
+            informazioni = self.pipe_conn.recv()
 
+            # updating ratios of re-drawing
+            self.x_ratio = width / informazioni["cam_width"]
+            self.y_ratio = height / informazioni["cam_height"]
 
-            # Riceve dati dal pipe e aggiorna la posizione
-            if self.pipe_conn.poll():
-                informazioni = self.pipe_conn.recv()
-
-                #updating ratios of re-drawing
-                self.x_ratio = width / informazioni["cam_width"]
-                self.y_ratio = height / informazioni["cam_height"]
-
-                #Display camera
+            # Display camera
+            if self.enable_player_rendering:
                 global sprites
                 new_image = pyglet.image.ImageData(640, 480, 'RGB', informazioni["image"].tobytes(), pitch=-640 * 3)
                 texture = new_image.get_texture()
@@ -636,11 +747,27 @@ class Exercise_FollowPath(SceneTemplate):
                 new_sprite.scale_y = self.y_ratio
                 sprites = [new_sprite]  # Add the new sprite to the list
 
+            if self.timer_running:
+                self.time_elapsed += (dt * 3.8) #il programma è cosi lento che serve un moltiplicatore
+                self.timer_label.text = f"Cronometro: {self.time_elapsed:.1f}"
+
+
+
+
+
+
                 #print(self.keypoint_classifier_labels[0])
                 gesto_nome = self.keypoint_classifier_labels[informazioni['gesture']]
                 gesto_id = informazioni['gesture']
 
+
+
                 self.label_gesture.text = "Gesto rilevato: " + str(gesto_nome) + " (" + str(gesto_id) + ")"
+                if is_debugging_mode:
+                    self.label_gesture.visible = True
+                else:
+                    self.label_gesture.visible = False
+
 
                 if informazioni['gesture'] != -1: #grabbing and ale grabbing
                     #we track the landmarks, create a polygon in which the ball lies and we
@@ -660,22 +787,19 @@ class Exercise_FollowPath(SceneTemplate):
 
                     centroid, area = calculate_centroid(polygon)
                     if inside:
-
-                        #self.circle.position = centroid
                         x = centroid[0]
                         y = centroid[1]
 
-                        #self.winning_window()
-
-                        #x = informazioni['landmarks'][8][0] * self.x_ratio
-                        #y = height - (informazioni['landmarks'][8][1] * self.y_ratio)
-
-                        #I nuovi valori sono legati al triangolo in cui è presente
-
-                        #i valori sono boundati al rettangolo in questo caso
+                        #i valori sono boundati al rettangolo in questo caso per il calcolo della accuracy
                         new_x, new_y = clamp_point_in_polygon(
                             (x, y),
                             self.polygon_vertices
+                        )
+
+                        #in ogni caso sono vincolati alle dimensioni dello schermo per evitare che esca il pallino
+                        x, y = clamp_point_in_polygon(
+                            (x, y),
+                            [(0+20, 0+20), (0+20, height-20), (width-20, height-20), (width-20, 0+20)],
                         )
 
                         #la mano è libera ma le coordinate per l'accuracy sono incolate al poligono
@@ -714,7 +838,10 @@ class Exercise_FollowPath(SceneTemplate):
                     if self.checkpoints_reached[i-1] and i > 0 or i == 0: #tranne il primo
                         # if i == 0: #elimino tutto il percorso fatto fin'ora
                         #     self.path.clear()
-
+                        #playsound
+                        #playsound('/sounds/coin.wav')
+                        sound = pyglet.media.load('sounds/coin.wav', streaming=False)
+                        sound.play()
 
                         self.checkpoints_reached[i] = True
                         self.checkpoint_shapes[i].color = (0, 255, 0)
@@ -731,26 +858,75 @@ class Exercise_FollowPath(SceneTemplate):
 
 
     def handle_key(self, symbol, modifiers):
+        # Scelta difficoltà facile
+        if symbol == key._1:
+            self.level_difficulty_chosen = 'facile'
+            #{'facile': 30.0, 'medio':20.0, 'difficile': 8}
+            self.label_warning.text = "Scelto il livello 1"
+        if symbol == key._2:
+            self.level_difficulty_chosen = 'medio'
+            self.label_warning.text = "Scelto il livello 2"
+        if symbol == key._3:
+            self.level_difficulty_chosen = 'difficile'
+            self.label_warning.text = "Scelto il livello 3"
+
+
         """Gestisce l'input da tastiera."""
         if symbol == key.R:  # Ripristina il livello con il tasto R
-            self.reset_game()
-            self.start_game()
+            #al reset facciamo riscegliere la difficoltà?
+            self.text_layout_chosediff.visible = True
+            self.chosediff_rectangle.visible = True
 
-        if symbol == key.P and not self.timer_running:
+            self.pause_rectangle.visible = False
+            self.text_layout_pause.visible = False
+
+            self.reset_game()
+            #self.start_game()
+
+        if symbol == key.ENTER and not self.timer_running:
+            self.text_layout_chosediff.visible = False
+            self.chosediff_rectangle.visible = False
+
+
+
+
             self.label_instructions.visible = False
             self.label_level.visible = True
             #self.reset_game()
             self.reset_game()
             self.start_game()
-        # elif symbol == key.R:  # Ripristina il livello con il tasto R
-        #     self.reset_game()
-        #     self.start_game()
+
+        if symbol == key.P:
+            if self.timer_running:
+                print("Hai tentato di mettere in pausa il gioco")
+                self.timer_running = False
+                self.pause_rectangle.visible = True
+                self.text_layout_pause.visible = True
+
+                self.success_rectangle.visible = False
+                self.text_layout_success.visible = False
+
+            else:
+                print("Hai tentato di continuare il gioco")
+
+                #mettiamo un countdown di qualche secondo prima di far continuare
+                self.timer_running = True
+                self.pause_rectangle.visible = False
+                self.text_layout_pause.visible = False
+
+                self.success_rectangle.visible = False
+                self.text_layout_success.visible = False
+
+
+
+
+
 
 
 class LevelFollowPath1(Exercise_FollowPath):
     def __init__(self, pipe_conn):
-        x_ratio = 1 #1920 / 640
-        y_ratio = 1 #1080 / 480
+        x_ratio = screen_width / 640
+        y_ratio = screen_height / 480
 
         self.polygon_vertices = [
             (100, 350),  # Punto in basso a sinistra con padding
@@ -777,15 +953,16 @@ class LevelFollowPath1(Exercise_FollowPath):
                          circle_position_x=self.position_x,
                          circle_position_y=self.position_y,
                          checkpoint_list=checkpoints,
-                         level_title="Esercizio 1"
+                         level_title="Esercizio 1",
+                         difficulty_times={'facile': 30.0, 'medio': 20.0, 'difficile': 8.0}
         )
 
 
 
 class LevelFollowPath2(Exercise_FollowPath):
     def __init__(self, pipe_conn):
-        x_ratio = 1 #1920 / 640
-        y_ratio = 1 #1080 / 480
+        x_ratio = screen_width / 640
+        y_ratio = screen_height / 480
 
         self.polygon_vertices = [
             (85, 100),  # Punto in basso a sinistra con padding
@@ -815,14 +992,15 @@ class LevelFollowPath2(Exercise_FollowPath):
                          circle_position_x=self.position_x,
                          circle_position_y=self.position_y,
                          checkpoint_list=checkpoints,
-                         level_title="Esercizio 2"
+                         level_title="Esercizio 2",
+                         difficulty_times={'facile': 30.0, 'medio': 20.0, 'difficile': 8.0}
         )
 
 
 class LevelFollowPath3(Exercise_FollowPath):
     def __init__(self, pipe_conn):
-        x_ratio = 1 #1920 / 640 * 0.9
-        y_ratio = 1 #1080 / 480 * 0.9
+        x_ratio = screen_width / 640 * 0.9
+        y_ratio = screen_height / 480 * 0.9
 
         self.polygon_vertices = [
             (100, 450),  # B1
@@ -861,7 +1039,8 @@ class LevelFollowPath3(Exercise_FollowPath):
                          circle_position_x=self.position_x,
                          circle_position_y=self.position_y,
                          checkpoint_list=checkpoints,
-                         level_title="Esercizio 3"
+                         level_title="Esercizio 3",
+                         difficulty_times={'facile': 30.0, 'medio': 20.0, 'difficile': 8.0}
         )
 
 

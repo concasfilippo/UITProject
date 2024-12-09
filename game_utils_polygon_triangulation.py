@@ -50,7 +50,7 @@ from scipy.spatial import Delaunay
 from shapely.geometry import Polygon
 from scipy.interpolate import interp1d
 from shapely.geometry import Point, Polygon
-
+from decimal import Decimal
 
 def get_triangles_from_polygon(points):
     """
@@ -128,6 +128,34 @@ def polygon_area(points):
         area += x1 * y2 - y1 * x2
 
     return abs(area) / 2
+
+
+def polygon_area_decimal(points):
+    """
+    Calculate the area of a concave polygon given its vertices.
+
+    Parameters:
+    points (list of tuple): A list of (x, y) coordinates of the polygon's vertices
+                            in either clockwise or counterclockwise order, using Decimal values.
+
+    Returns:
+    Decimal: The absolute value of the area of the polygon.
+    """
+    # Ensure all coordinates are Decimal
+    points = [(Decimal(x), Decimal(y)) for x, y in points]
+
+    n = len(points)
+    if n < 3:
+        raise ValueError("A polygon must have at least 3 points.")
+
+    # Shoelace formula
+    area = Decimal(0)
+    for i in range(n):
+        x1, y1 = points[i]
+        x2, y2 = points[(i + 1) % n]  # Wrap around to the first point
+        area += x1 * y2 - y1 * x2
+
+    return abs(area) / Decimal(2)
 
 
 def ensure_point_inside_triangle(triangle, point):
@@ -486,6 +514,46 @@ def calcola_area_totale(lista1, lista2):
             area_totale += calcola_area(poligono)
 
     return area_totale
+
+######## AGIORNAMENTO USO DECIMAL
+def calcola_area_decimal(poligono):
+    """
+    Calcola l'area di un poligono dato un elenco di punti utilizzando la formula di Gauss (area di un poligono semplice).
+    """
+    x = [p[0] for p in poligono]
+    y = [p[1] for p in poligono]
+
+    area = Decimal(0)
+    n = len(poligono)
+    for i in range(n):
+        j = (i + 1) % n
+        area += x[i] * y[j]
+        area -= x[j] * y[i]
+    return abs(area) / Decimal(2)
+
+def calcola_area_totale_decimal(lista1, lista2):
+    """
+    Allinea le due liste, calcola l'area del poligono creato tra le coppie di punti di lista1
+    utilizzando i punti corrispondenti di lista2.
+    """
+    area_totale = Decimal(0)
+
+    # Per ogni coppia di punti consecutivi in lista1
+    for i in range(len(lista1) - 1):
+        p1 = lista1[i]
+        p2 = lista1[i + 1]
+
+        # Trova l'intervallo di punti in lista2 tra p1 e p2
+        idx1 = lista2.index(p1)
+        idx2 = lista2.index(p2)
+
+        if idx1 < idx2:  # Assicurati che i punti siano nell'ordine giusto
+            poligono = lista2[idx1:idx2 + 1]
+            area_totale += calcola_area_decimal(poligono)
+
+    return area_totale
+
+
 
 if __name__ == '__main__':
     get_triangles_from_polygon(points=[(0, 0), (2, 0), (2, 2), (1, 1), (0, 2)])

@@ -147,3 +147,101 @@ def insert_intersections_corrected(line1, line2):
         updated_line2.insert(pos, point)
 
     return updated_line2
+
+
+########## AGGIORNAMENTO PER L'USO DI DECIMAL
+from decimal import Decimal
+
+def insert_intersections_decimal(line1, line2):
+    """
+    Trova le intersezioni tra i segmenti di due linee e aggiorna la seconda linea
+    inserendo le intersezioni nel punto corretto, gestendo anche intersezioni esatte sugli endpoint.
+    Le linee sono rappresentate da liste di coppie di Decimal.
+    """
+    def is_intersecting(p1, p2, q1, q2):
+        """Calcola se due segmenti si intersecano e il punto di intersezione."""
+        det = (p2[0] - p1[0]) * (q2[1] - q1[1]) - (p2[1] - p1[1]) * (q2[0] - q1[0])
+        if det == Decimal(0):
+            return False, None  # Segmenti paralleli o coincidenti
+
+        t = ((q1[0] - p1[0]) * (q2[1] - q1[1]) - (q1[1] - p1[1]) * (q2[0] - q1[0])) / det
+        u = ((q1[0] - p1[0]) * (p2[1] - p1[1]) - (q1[1] - p1[1]) * (p2[0] - p1[0])) / det
+
+        if Decimal(0) <= t <= Decimal(1) and Decimal(0) <= u <= Decimal(1):
+            # Calcolo punto di intersezione
+            intersection = (
+                p1[0] + t * (p2[0] - p1[0]),
+                p1[1] + t * (p2[1] - p1[1])
+            )
+            return True, intersection
+
+        return False, None
+
+    updated_line2 = line2.copy()
+    insert_positions = []  # Traccia le posizioni dove inserire gli aggiornamenti
+
+    for i in range(len(line1) - 1):
+        p1, p2 = line1[i], line1[i + 1]
+        for j in range(len(updated_line2) - 1):
+            q1, q2 = updated_line2[j], updated_line2[j + 1]
+            intersect, point = is_intersecting(p1, p2, q1, q2)
+            if intersect and point not in updated_line2:
+                insert_positions.append((j + 1, point))  # Traccia posizione e punto
+
+    # Inserire i punti nella posizione corretta senza interferire con l'iterazione
+    for pos, point in sorted(insert_positions, reverse=True):
+        updated_line2.insert(pos, point)
+
+    return updated_line2
+
+
+# Correzione bug di approssimazione
+def aggiorna_punti(lista1, lista2, tolleranza=Decimal("0.3")):
+    """
+    Confronta due liste di coppie di Decimal e aggiorna i valori nella seconda lista
+    se differiscono dai valori della prima lista di una quantità al massimo pari a `tolleranza`.
+
+    Parameters:
+    lista1 (list of tuple): La lista di riferimento con coppie di Decimal.
+    lista2 (list of tuple): La lista che sarà aggiornata.
+    tolleranza (Decimal): La tolleranza massima per considerare una coppia come simile.
+
+    Returns:
+    list of tuple: La seconda lista aggiornata.
+    """
+    lista2_aggiornata = lista2.copy()
+
+    for i, punto2 in enumerate(lista2):
+        for punto1 in lista1:
+            if abs(punto1[0] - punto2[0]) <= tolleranza and abs(punto1[1] - punto2[1]) <= tolleranza:
+                print(f'Vecchio valore {lista2_aggiornata[i]} nuovo valore {punto1}')
+                # Aggiorna il punto della seconda lista
+                lista2_aggiornata[i] = punto1
+                #lista2_aggiornata.insert(i + 1, punto1)
+
+
+                break  # Esci dal ciclo interno appena trovi una corrispondenza
+
+    return lista2_aggiornata
+
+
+def rimuovi_duplicati_consecutivi(lista):
+    """
+    Rimuove gli elementi consecutivi duplicati da una lista di coppie di Decimal.
+
+    Parameters:
+    lista (list of tuple): La lista di coppie di Decimal.
+
+    Returns:
+    list of tuple: Una nuova lista senza duplicati consecutivi.
+    """
+    if not lista:
+        return []
+
+    lista_filtrata = [lista[0]]  # Aggiungi il primo elemento
+
+    for i in range(1, len(lista)):
+        if lista[i] != lista[i - 1]:
+            lista_filtrata.append(lista[i])
+
+    return lista_filtrata
