@@ -15,3 +15,5 @@ height = screen_height #480
 
 ### IMPOSTAZIONI DI DEBUG DEGLI ESERCIZI
 is_debugging_mode = False
+
+is_end_level_audio_enabled = False

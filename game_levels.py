@@ -400,6 +400,11 @@ class Exercise_FollowPath(SceneTemplate):
         self.timer_label = pyglet.text.Label(
             "Cronometro: 0.0", font_name="Arial", font_size=16,
             color=(255, 255, 255, 255), x=10, y=height - 40, batch=self.batch, group=self.fg_group)
+        self.timer_label.visible = False
+
+        self.timer_remaining_label = pyglet.text.Label(
+            "Tempo rimanente: 0.0", font_name="Arial", font_size=16,
+            color=(255, 255, 255, 255), x=10, y=height - 40, batch=self.batch, group=self.fg_group)
 
         self.label_instructions = pyglet.text.Label(  # label livello
             "Premi [Enter] per iniziare, [R] per ricominciare il livello, [P] per mettere in pausa.", font_name="Arial", font_size=16,
@@ -442,8 +447,6 @@ class Exercise_FollowPath(SceneTemplate):
 
         self.x_ratio = 1.0 #width / informazioni["cam_width"]
         self.y_ratio = 1.0 #height / informazioni["cam_height"]
-
-
 
         ########## DEFINIZIONE SCHERMATA DI VITTORIA
         # Rettangolo
@@ -571,20 +574,23 @@ class Exercise_FollowPath(SceneTemplate):
         self.text_layout_chosediff.y = (height - self.text_layout_chosediff.content_height) // 2  # Centra verticalmente
         self.text_layout_chosediff.visible = True
 
-
-
-
-
+        self.first_checkpoint_not_reached = True
+        self.first_checkpoint_reached_time_elapsed = 0.0
 
     def start_game(self):
         """Avvia il timer e consente il movimento del pallino."""
         self.timer_running = True
         self.time_elapsed = 0.0
+        self.first_checkpoint_reached_time_elapsed = 0.0
         self.path = []  # Resetta il percorso del pallino
 
     def stop_game(self):
         """Ferma il gioco e calcola l'accuratezza."""
         self.timer_running = False
+
+        time_level = self.difficulty_times[self.level_difficulty_chosen]
+        is_win = float(self.timer_label.text[12:]) < time_level
+        #print(is_win)
 
         # Calcola l'accuratezza
         if len(self.path) > 1:
@@ -615,7 +621,7 @@ class Exercise_FollowPath(SceneTemplate):
             intersezioni_pla_check = [elemento for elemento in checkpoints if elemento not in checkpoint_intersection]
             intersezioni_pla_check = [(round(x, 1), round(y, 1)) for x, y in intersezioni_pla_check]
             #secondo arrootondamento esterno per evitare problemi di python
-            intersezioni_pla_check = aggiorna_punti(checkpoint_intersection, intersezioni_pla_check)
+            #intersezioni_pla_check = aggiorna_punti(checkpoint_intersection, intersezioni_pla_check)
             #print(f'Intersezioni tra player e checkpoint (aggiorna punti): {intersezioni_pla_check}')
 
             #forse bisogna fare un ciclo di queste operazioni....
@@ -624,55 +630,21 @@ class Exercise_FollowPath(SceneTemplate):
             checkpoint_intersection = rimuovi_duplicati_consecutivi(checkpoint_intersection)
 
             player_intersection_sicuro  = rimuovi_duplicati_consecutivi(aggiorna_punti(checkpoint_intersection, player_intersection))
-            #checkpoint_intersection = rimuovi_duplicati_consecutivi(aggiorna_punti(player_intersection_sicuro, checkpoint_intersection))
-            #print(f'Path player + punti di intersezione dei checkpoints (arrotondati): {player_intersection_sicuro}')
-
-            #ho il sospetto che sia da ciclare un po' di volte perché vada "a convergenza"...
 
             # Aggiorna la prima lista rimuovendo gli elementi non presenti nella seconda lista
             checkpoint_intersection = [coppia for coppia in checkpoint_intersection if coppia in player_intersection_sicuro]
 
-
-
-            # # Crea una copia di lista3 per iterare in modo sicuro
-            #player_intersection_sicuro = player_intersection.copy()
-
-            #Itera su lista1 e verifica la condizione
-            # for elemento in intersezioni_pla_check:
-            #     if elemento not in player_intersection:  # Se l'elemento di lista1 non è in lista2
-            #         index = player_intersection.index(elemento)  # Trova l'indice corrispondente in lista3
-            #         player_intersection_sicuro.pop(index)  # Rimuovilo da lista3_filtrata
-
-
             if is_debugging_mode:
                 main(player_intersection, checkpoint_intersection, [], [])
 
-
             rect_area = polygon_area_decimal(self.polygon) #area totale oltre cui non uscire
-            #print(self.polygon)
-            #print(rect_area)
-
-            #rect_area = self.rect_width * self.rect_height
-            print("Liste di cui viene fatto il confronto:")
-            print(f'Intersezioni tra checkpoint e player: {checkpoint_intersection}')
-            print(f'Intersezioni tra player e checkpoint: {player_intersection_sicuro}')
-
-
 
             area_diff = calcola_area_totale_decimal(checkpoint_intersection, player_intersection_sicuro)
-            #compare_lists(self.path, points)
 
             accuracy = 1 - min(area_diff / rect_area, 1)
 
-            # if all(self.checkpoints_reached):
-            #     self.accuracy_label.text = f"Accuracy: {accuracy:.2%}"
-            # else:
-            #     self.accuracy_label.text = f"Accuracy: {0.0:.2%} - Hai dimenticato dei checkpoint"
-
             # Schermata di vittoria (o sconfitta?? :O )
-            time_level =  self.difficulty_times[self.level_difficulty_chosen]
-            is_win = float(self.timer_label.text[12:]) < time_level
-            print(is_win)
+
 
             if is_win:
                 label_winning = (
@@ -685,27 +657,57 @@ class Exercise_FollowPath(SceneTemplate):
                                                'font_name': 'Arial'})
                 self.document_success.set_style(8, len(self.document_success.text),
                                                 {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
-                sound = pyglet.media.load('sounds/win.wav', streaming=False)
-                sound.play()
+
+                if is_end_level_audio_enabled:
+                    sound = pyglet.media.load('sounds/win.wav', streaming=False)
+                    sound.play()
             else:
-                label_winning = (
-                    "RIPROVA!\n"  # Titolo grande
-                    f"Hai completato il percorso in {self.timer_label.text[12:]} secondi, ma avevi solo {time_level} secondi!. "
-                    "\nPremi [spazio] per andare al prossimo livello; [Q] Esci; [R] Rigioca il livello attuale."
-                )
+                if all(self.checkpoints_reached):
+                    label_winning = (
+                        "RIPROVA!\n"  # Titolo grande
+                        f"Hai completato il percorso in {self.timer_label.text[12:]} secondi, ma avevi solo {time_level} secondi!. "
+                        "\nPremi [spazio] per andare al prossimo livello; [Q] Esci; [R] Rigioca il livello attuale."
+                    )
+                else:
+                    label_winning = (
+                        "RIPROVA!\n"  # Titolo grande
+                        f"Non sei riuscito a completare il percorso nei {time_level} secondi previsti!. "
+                        "\nPremi [spazio] per andare al prossimo livello; [Q] Esci; [R] Rigioca il livello attuale."
+                    )
+
                 self.text_layout_success.document.text = label_winning
                 self.document_success.set_style(0, 8, {'font_size': 80, 'color': (255, 0, 0, 255), 'bold': True,
                                                        'align': 'center',
                                                        'font_name': 'Arial'})
                 self.document_success.set_style(8, len(self.document_success.text),
                                                 {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+
+                if is_end_level_audio_enabled:
+                    sound = pyglet.media.load('sounds/lose.wav', streaming=False)
+                    sound.play()
+        else:
+            # Tempo scaduto, mostro il messaggio di sconfitta
+            label_winning = (
+                "RIPROVA!\n"  # Titolo grande
+                f"Non sei riuscito a completare il percorso nei {time_level} secondi previsti!. "
+                "\nPremi [spazio] per andare al prossimo livello; [Q] Esci; [R] Rigioca il livello attuale."
+            )
+            self.text_layout_success.document.text = label_winning
+            self.document_success.set_style(0, 8, {'font_size': 80, 'color': (255, 0, 0, 255), 'bold': True,
+                                                   'align': 'center',
+                                                   'font_name': 'Arial'})
+            self.document_success.set_style(8, len(self.document_success.text),
+                                            {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+
+            if is_end_level_audio_enabled:
                 sound = pyglet.media.load('sounds/lose.wav', streaming=False)
                 sound.play()
 
 
 
-            self.text_layout_success.visible = True
-            self.success_rectangle.visible = True
+
+        self.text_layout_success.visible = True
+        self.success_rectangle.visible = True
 
 
 
@@ -715,6 +717,7 @@ class Exercise_FollowPath(SceneTemplate):
         self.time_elapsed = 0.0
         #self.timer_label_warning = 0.0
         self.timer_label.text = "Cronometro: 0.0"
+        #self.timer_remaining_label.text = "Tempo rimanente: 0.0"
         self.label_gesture.text = "Gesto rilevato: "
         self.label_warning.text = ""
         self.circle.x = self.circle_x #self.rect_x
@@ -733,7 +736,7 @@ class Exercise_FollowPath(SceneTemplate):
 
     def update(self, dt):
         """Aggiorna la posizione del pallino e il timer."""
-        # Riceve dati dal pipe e aggiorna la posizione
+        # Riceve dati dalla pipe e aggiorna la posizione
         if self.pipe_conn.poll():
             informazioni = self.pipe_conn.recv()
 
@@ -757,10 +760,15 @@ class Exercise_FollowPath(SceneTemplate):
                 self.time_elapsed += (dt * 3.8) #il programma è cosi lento che serve un moltiplicatore
                 self.timer_label.text = f"Cronometro: {self.time_elapsed:.1f}"
 
+                time_remaining = self.time_elapsed #valore base che aggiorneremo
+                time_level = self.difficulty_times[self.level_difficulty_chosen]
+                if not self.first_checkpoint_not_reached:
+                    time_remaining = time_level-self.time_elapsed
 
-
-
-
+                    if time_remaining > 0:
+                        self.timer_remaining_label.text = f"Tempo rimanente: {(time_level-self.time_elapsed):.1f}"
+                    else:
+                        self.timer_remaining_label.text = f"Tempo rimanente: 0.0"
 
                 #print(self.keypoint_classifier_labels[0])
                 gesto_nome = self.keypoint_classifier_labels[informazioni['gesture']]
@@ -796,6 +804,11 @@ class Exercise_FollowPath(SceneTemplate):
                         x = centroid[0]
                         y = centroid[1]
 
+                        if self.first_checkpoint_not_reached: #finché non tocca il pallino aggiorniamo il tempo
+                            self.first_checkpoint_reached_time_elapsed += self.time_elapsed
+
+                        self.first_checkpoint_not_reached = False #basta una sola volta
+
                         #i valori sono boundati al rettangolo in questo caso per il calcolo della accuracy
                         new_x, new_y = clamp_point_in_polygon(
                             (x, y),
@@ -828,10 +841,10 @@ class Exercise_FollowPath(SceneTemplate):
 
                         self.check_for_checkpoints() #check if a checkpoint is crossed
 
-                        # Ferma il gioco se il pallino raggiunge il lato destro (e non è rimasto li dalla iterazione precedente)
-                        #if new_x >= self.rect_x + self.rect_width and self.time_elapsed > 1.0:
-                        if all(self.checkpoints_reached):
-                            self.stop_game()
+                # Ferma il gioco se il pallino raggiunge il lato destro (e non è rimasto li dalla iterazione precedente)
+                # if new_x >= self.rect_x + self.rect_width and self.time_elapsed > 1.0:
+                if all(self.checkpoints_reached) or time_remaining < 0:
+                    self.stop_game()
 
                 self.batch.draw()
 
@@ -866,15 +879,24 @@ class Exercise_FollowPath(SceneTemplate):
     def handle_key(self, symbol, modifiers):
         # Scelta difficoltà facile
         if symbol == key._1:
-            self.level_difficulty_chosen = 'facile'
-            #{'facile': 30.0, 'medio':20.0, 'difficile': 8}
+            self.level_difficulty_chosen = 'facile'             #{'facile': 30.0, 'medio':20.0, 'difficile': 8}
             self.label_warning.text = "Scelto il livello 1"
+
+            time_level = self.difficulty_times[self.level_difficulty_chosen]
+            self.timer_remaining_label.text = f"Tempo rimanente: {time_level}"
         if symbol == key._2:
             self.level_difficulty_chosen = 'medio'
             self.label_warning.text = "Scelto il livello 2"
+
+            time_level = self.difficulty_times[self.level_difficulty_chosen]
+            self.timer_remaining_label.text = f"Tempo rimanente: {time_level}"
         if symbol == key._3:
             self.level_difficulty_chosen = 'difficile'
             self.label_warning.text = "Scelto il livello 3"
+
+            time_level = self.difficulty_times[self.level_difficulty_chosen]
+            print(time_level)
+            self.timer_remaining_label.text = f"Tempo rimanente: {time_level}"
 
 
         """Gestisce l'input da tastiera."""
@@ -893,9 +915,6 @@ class Exercise_FollowPath(SceneTemplate):
             self.text_layout_chosediff.visible = False
             self.chosediff_rectangle.visible = False
 
-
-
-
             self.label_instructions.visible = False
             self.label_level.visible = True
             #self.reset_game()
@@ -904,7 +923,7 @@ class Exercise_FollowPath(SceneTemplate):
 
         if symbol == key.P:
             if self.timer_running:
-                print("Hai tentato di mettere in pausa il gioco")
+                #print("Hai tentato di mettere in pausa il gioco")
                 self.timer_running = False
                 self.pause_rectangle.visible = True
                 self.text_layout_pause.visible = True
@@ -913,7 +932,7 @@ class Exercise_FollowPath(SceneTemplate):
                 self.text_layout_success.visible = False
 
             else:
-                print("Hai tentato di continuare il gioco")
+                #print("Hai tentato di continuare il gioco")
 
                 #mettiamo un countdown di qualche secondo prima di far continuare
                 self.timer_running = True

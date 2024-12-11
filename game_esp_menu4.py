@@ -5,7 +5,9 @@ import time
 import math
 
 import game_levels
+import game_levels_tutorial
 from  settings import *
+
 import csv
 
 
@@ -46,23 +48,20 @@ class Window(pyglet.window.Window):
     def __init__(self, pipe_conn):
         super().__init__(width=width, height=height)
         self.pipe_conn = pipe_conn
-        self.states = [game_levels.Tutorial1(pipe_conn),
-                       game_levels.Tutorial2(pipe_conn),
-                       game_levels.Tutorial3_1(pipe_conn),
-                       #game_levels.Tutorial4(pipe_conn),
-                       #Level2(pipe_conn),
-                       # Level3(pipe_conn),
-                       #game_levels.Level4(pipe_conn),
-                       #game_levels.Level5(pipe_conn),
-                       #game_levels.Level6_FollowPath(pipe_conn),
-                       game_levels.LevelFollowPath1(pipe_conn),
-                       game_levels.LevelFollowPath2(pipe_conn),
-                       game_levels.LevelFollowPath3(pipe_conn),
-                       game_levels.FinalScene(pipe_conn)
-                       ]
+        self.states = [
+            game_levels.Tutorial1(pipe_conn),
+            game_levels.Tutorial2(pipe_conn),
+            game_levels.Tutorial3_1(pipe_conn),
+            game_levels_tutorial.LevelTutorialPath(pipe_conn),
+            game_levels.LevelFollowPath1(pipe_conn),
+            game_levels.LevelFollowPath2(pipe_conn),
+            game_levels.LevelFollowPath3(pipe_conn),
+            game_levels.FinalScene(pipe_conn),
+        ]
         self.current_state = 0
+        self.old_state = None  # Nessun livello precedente all'inizio
+        self.tutorial_index = 3  # Indice del livello tutorial
         self.set_visible()
-
 
         # Schedule updates for active scene
         pyglet.clock.schedule_interval(self.update, 1 / 60)
@@ -73,14 +72,35 @@ class Window(pyglet.window.Window):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.Q:
-            #print("Chiusura applicativo")
             self.close()
-        # Switch to the next scene on SPACE
-        if symbol == key.SPACE:
-            self.current_state = (self.current_state + 1) % len(self.states)
+
+        # Gestione del tasto T per passare al tutorial o tornare indietro
+        elif symbol == key.T:
+            if self.current_state == self.tutorial_index:
+                # Ritorna al livello precedente
+                self.current_state = self.old_state
+                self.old_state = None
+            else:
+                # Salva il livello attuale e passa al tutorial
+                self.old_state = self.current_state
+                self.current_state = self.tutorial_index
             print(f"Switched to scene {self.current_state}")
+
+        # Gestione del tasto SPACE per ciclare i livelli
+        elif symbol == key.SPACE:
+            if self.current_state == self.tutorial_index and self.old_state is not None:
+                # Se siamo nel tutorial e c'era un livello precedente, torna a quello
+                self.current_state = self.old_state
+                self.old_state = None
+            else:
+                # Cicla sui livelli, escludendo il tutorial
+                self.current_state = (self.current_state + 1) % len(self.states)
+                if self.current_state == self.tutorial_index:
+                    self.current_state = (self.current_state + 1) % len(self.states)
+            print(f"Switched to scene {self.current_state}")
+
+        # Inoltra gli altri tasti alla scena corrente
         else:
-            # Forward other keys to the active scene
             self.states[self.current_state].handle_key(symbol, modifiers)
 
     def update(self, dt):
