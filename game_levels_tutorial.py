@@ -421,6 +421,8 @@ class Tutorial_FollowPath(SceneTemplate):
 
         for cp in range(0, len(self.checkpoint_shapes)):
             self.checkpoint_shapes[cp].color = (200, 0, 0)
+            self.checkpoint_shapes[cp].visible = False
+
         self.checkpoints_reached = self.checkpoints_reached = [False] * len(self.checkpoints)
         #[False, False, False]
         self.checkpoint_shapes[0].color = (0, 0, 200)  # evidenziamo il primo checkpoint da prendere
@@ -502,7 +504,7 @@ class Tutorial_FollowPath(SceneTemplate):
                             #f"Premi [ENTER] per iniziare a giocare."
                         )
                         self.tutorial1_document.text = label_tutorial
-                        self.tutorial1_document.set_style(0, 14, {'font_size': 80, 'color': (0, 255, 255, 255), 'bold': True,
+                        self.tutorial1_document.set_style(0, 14, {'font_size': 80, 'color': (0, 225, 255, 255), 'bold': True,
                                                                'align': 'center',
                                                                'font_name': 'Arial'})
                         self.tutorial1_document.set_style(14, len(self.document_success.text),
@@ -554,7 +556,7 @@ class Tutorial_FollowPath(SceneTemplate):
                             )
                             self.tutorial1_document.text = label_tutorial
                             self.tutorial1_document.set_style(0, 12,
-                                                              {'font_size': 80, 'color': (0, 255, 255, 255), 'bold': True,
+                                                              {'font_size': 80, 'color': (0, 195, 255, 235), 'bold': True,
                                                                'align': 'center',
                                                                'font_name': 'Arial'})
                             self.tutorial1_document.set_style(12, len(self.document_success.text),
