@@ -577,6 +577,8 @@ class Exercise_FollowPath(SceneTemplate):
         self.first_checkpoint_not_reached = True
         self.first_checkpoint_reached_time_elapsed = 0.0
 
+
+
     def start_game(self):
         """Avvia il timer e consente il movimento del pallino."""
         self.timer_running = True
@@ -710,6 +712,27 @@ class Exercise_FollowPath(SceneTemplate):
         self.success_rectangle.visible = True
 
 
+    def draw_arrow(self, x1, y1, x2, y2):
+        """
+        Disegna una freccia da (x1, y1) a (x2, y2) utilizzando shapes.
+        """
+        # Calcola la lunghezza e l'angolo della linea principale
+        angle = math.atan2(y2 - y1, x2 - x1)
+        arrow_length = 20  # Lunghezza delle alette della freccia
+        arrow_angle = math.pi / 6  # Angolo delle alette della freccia
+
+        # Calcola le coordinate delle alette
+        x3 = x2 - arrow_length * math.cos(angle - arrow_angle)
+        y3 = y2 - arrow_length * math.sin(angle - arrow_angle)
+        x4 = x2 - arrow_length * math.cos(angle + arrow_angle)
+        y4 = y2 - arrow_length * math.sin(angle + arrow_angle)
+
+        # Disegna la linea principale
+        self.line = shapes.Line(x1, y1, x2, y2, width=6, color=(255, 255, 255), batch=self.batch)
+
+        # Disegna le alette della freccia
+        self.left_wing = shapes.Line(x2, y2, x3, y3, width=6, color=(255, 255, 255), batch=self.batch)
+        self.right_wing = shapes.Line(x2, y2, x4, y4, width=6, color=(255, 255, 255), batch=self.batch)
 
     def reset_game(self):
         """Ripristina lo stato iniziale del livello."""
@@ -773,6 +796,31 @@ class Exercise_FollowPath(SceneTemplate):
                 #print(self.keypoint_classifier_labels[0])
                 gesto_nome = self.keypoint_classifier_labels[informazioni['gesture']]
                 gesto_id = informazioni['gesture']
+
+                # Aggiornamento con una freccia per far capire dove deve andare
+                #coordinate_next = (0, 0)
+
+                i = -1
+                for index, value in enumerate(self.checkpoints_reached):
+                    if value:
+                        i = index
+
+
+
+
+
+                # condizione in più per il primo pallino che è da prendere
+                #coordinate_next = self.checkpoints[0]['x'], self.checkpoints[i]['y']
+                if i == -1:
+                    self.draw_arrow(self.circle.position[0],
+                                    self.circle.position[1],
+                                    self.checkpoints[0]['x'],
+                                    self.checkpoints[0]['y'])
+                else:
+                    self.draw_arrow(self.circle.position[0],
+                                    self.circle.position[1],
+                                    self.checkpoints[i+1]['x'],
+                                    self.checkpoints[i+1]['y'])
 
 
 
