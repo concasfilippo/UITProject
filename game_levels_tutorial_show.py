@@ -14,10 +14,10 @@ class Tutorial4(SceneTemplate):
         # Percorsi dei video
         self.new_sprite = [None] * 4
         self.video_paths = [
+            "videos/1d.mp4",  # Percorso del terzo video
+            "videos/1e.mp4", # Percorso del quarto video
             "videos/1b.mp4",  # Percorso del primo video
             "videos/1c.mp4",  # Percorso del secondo video
-            "videos/1d.mp4",  # Percorso del terzo video
-            "videos/1e.mp4"  # Percorso del quarto video
         ]
 
         # Crea gli oggetti VideoCapture per ogni video
@@ -100,18 +100,50 @@ class Tutorial4(SceneTemplate):
                 # label_x = positions[i][0] - 50  # Sposta l'etichetta a sinistra rispetto alla posizione del video
                 # label_y = positions[i][1] + resized_image.height // 2  # Centra verticalmente l'etichetta rispetto al video
 
-                self.label_1 = pyglet.text.Label('Passo 1:',
-                                                 font_name='Arial', font_size=16,  x=positions[0][0] - 50, y=positions[0][1] + resized_image.height // 2,
-                                                 anchor_x='center', anchor_y='center', batch=self.batch)
-                self.label_2 = pyglet.text.Label('Passo 2:',
-                                                 font_name='Arial', font_size=16,  x=positions[1][0] - 50, y=positions[1][1] + resized_image.height // 2,
-                                                 anchor_x='center', anchor_y='center', batch=self.batch)
-                self.label_3 = pyglet.text.Label('Passo 3:',
-                                                 font_name='Arial', font_size=16,  x=positions[2][0] - 50, y=positions[2][1] + resized_image.height // 2,
-                                                 anchor_x='center', anchor_y='center', batch=self.batch)
-                self.label_4 = pyglet.text.Label('Passo 4:',
-                                                 font_name='Arial', font_size=16,  x=positions[3][0] - 50, y=positions[3][1] + resized_image.height // 2,
-                                                 anchor_x='center', anchor_y='center', batch=self.batch)
+                self.label_1 = pyglet.text.Label('Passo 3:',
+                                                 font_name='Arial', font_size=16,  x=positions[0][0] - 20, y=positions[0][1] + resized_image.height // 2,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_1_1 = pyglet.text.Label('Sposta la pallina verso',
+                                                 font_name='Arial', font_size=16, x=positions[0][0] - 20,
+                                                 y=positions[0][1] + resized_image.height // 2 - 20,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_1_2 = pyglet.text.Label(' il check point',
+                                                   font_name='Arial', font_size=16, x=positions[0][0] -20,
+                                                   y=positions[0][1] + resized_image.height // 2 - 40,
+                                                   anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_2 = pyglet.text.Label('Passo 4:',
+                                                 font_name='Arial', font_size=16,  x=positions[1][0] - 20, y=positions[1][1] + resized_image.height // 2,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_2_1 = pyglet.text.Label('Ora spostala verso',
+                                                 font_name='Arial', font_size=16, x=positions[1][0] - 20,
+                                                 y=positions[1][1] + resized_image.height // 2 - 20,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_2_2 = pyglet.text.Label('i checkpoint successivi',
+                                                 font_name='Arial', font_size=16, x=positions[1][0] - 20,
+                                                 y=positions[1][1] + resized_image.height // 2 -40,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_3 = pyglet.text.Label('Passo 1:',
+                                                 font_name='Arial', font_size=16,  x=positions[2][0] - 20, y=positions[2][1] + resized_image.height // 2,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_3_1 = pyglet.text.Label('Apri la mano in modo',
+                                                 font_name='Arial', font_size=16, x=positions[2][0] - 20,
+                                                 y=positions[2][1] + resized_image.height // 2 - 20,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_3_2 = pyglet.text.Label('sia completamente visibile',
+                                                 font_name='Arial', font_size=16, x=positions[2][0] - 20,
+                                                 y=positions[2][1] + resized_image.height // 2 - 40,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_4 = pyglet.text.Label('Passo 2:',
+                                                 font_name='Arial', font_size=16,  x=positions[3][0] - 20, y=positions[3][1] + resized_image.height // 2,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_4_1 = pyglet.text.Label('Muovi la mano aperta',
+                                                 font_name='Arial', font_size=16, x=positions[3][0] - 20,
+                                                 y=positions[3][1] + resized_image.height // 2 - 20,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
+                self.label_4_2 = pyglet.text.Label('verso la pallina',
+                                                 font_name='Arial', font_size=16, x=positions[3][0] - 20,
+                                                 y=positions[3][1] + resized_image.height // 2 - 40,
+                                                 anchor_x='right', anchor_y='center', batch=self.batch)
 
                 # Crea l'etichetta
                 # self.label = pyglet.text.Label("testo1", #labels[i],

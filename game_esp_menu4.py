@@ -96,9 +96,12 @@ class Window(pyglet.window.Window):
                 self.old_state = None
             else:
                 # Cicla sui livelli, escludendo il tutorial
-                self.current_state = (self.current_state + 1) % len(self.states)
-                if self.current_state == self.tutorial_index:
+                if self.current_state != 8:
                     self.current_state = (self.current_state + 1) % len(self.states)
+                    if self.current_state == self.tutorial_index:
+                        self.current_state = (self.current_state + 1) % len(self.states)
+                else:
+                    self.current_state = (self.current_state + 1) % len(self.states) + 5
             print(f"Switched to scene {self.current_state}")
 
         # Inoltra gli altri tasti alla scena corrente
