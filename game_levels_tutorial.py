@@ -213,7 +213,7 @@ class Tutorial_FollowPath(SceneTemplate):
         label_tutorial1 = (
             f"PRIMO PASSO:\n"  # Titolo grande
             f"Posiziona la mano in modo che sia completamente visibile sullo schermo, occupando circa metà dell'area visibile, senza coprirla interamente."
-            f"Premi [ENTER] per iniziare a giocare."
+            f"Apri quindi il palmo della mano. Premi [ENTER] per iniziare a giocare."
         )
         self.tutorial1_document.text = label_tutorial1
         # Stile per "SUCCESSO"
@@ -407,7 +407,7 @@ class Tutorial_FollowPath(SceneTemplate):
         label_tutorial1 = (
             f"PRIMO PASSO:\n"  # Titolo grande
             f"Posiziona la mano in modo che sia completamente visibile sullo schermo, occupando circa metà dell'area visibile, senza coprirla interamente."
-            f"Premi [ENTER] per iniziare a giocare."
+            f"Apri quindi il palmo della mano. Premi [ENTER] per iniziare a giocare."
         )
         self.tutorial1_document.text = label_tutorial1
         # Stile per "SUCCESSO"
@@ -473,8 +473,13 @@ class Tutorial_FollowPath(SceneTemplate):
                 else:
                     self.label_gesture.visible = False
 
+                rilevamento_grabbing = False
+                if self.tutorial1_hand_was_seen == False:
+                    rilevamento_grabbing = informazioni['gesture'] == 1
+                else:
+                    rilevamento_grabbing = informazioni['gesture'] != -1
 
-                if informazioni['gesture'] != -1: #grabbing and ale grabbing
+                if rilevamento_grabbing: #grabbing and ale grabbing
                     #we track the landmarks, create a polygon in which the ball lies and we
                     #move the ball according these positions
                     landmark0 = tuple(informazioni["landmarks"][0])
