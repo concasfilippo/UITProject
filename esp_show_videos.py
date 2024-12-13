@@ -1,135 +1,133 @@
-# import pyglet
-# from pyglet.shapes import Rectangle
-# from pyglet.text import Label
-# from pyglet.media import Player, Source, load
-#
-# class TutorialLevel(pyglet.window.Window):
-#     def __init__(self):
-#         super().__init__(800, 600, "Tutorial")
-#
-#         # Rettangoli
-#         self.rectangles = [
-#             Rectangle(50, 320, 300, 200, color=(200, 200, 200)),  # Primo rettangolo
-#             Rectangle(450, 320, 300, 200, color=(200, 200, 200)),  # Secondo rettangolo
-#             Rectangle(50, 50, 300, 200, color=(200, 200, 200)),    # Terzo rettangolo
-#             Rectangle(450, 50, 300, 200, color=(200, 200, 200))    # Quarto rettangolo
-#         ]
-#
-#         # Testi associati ai rettangoli
-#         self.labels = [
-#             Label("Fase 1 del tutorial:\nPosizionare una delle mani,\ntenendo un metro di distanza,\ndavanti alla fotocamera",
-#                   x=200, y=420, anchor_x='center', anchor_y='center', color=(0, 0, 0, 255), width=280, multiline=True),
-#             Label("Fase 2 del tutorial:\nApri il palmo per\nfar riconoscere la mano",
-#                   x=600, y=420, anchor_x='center', anchor_y='center', color=(0, 0, 0, 255), width=280, multiline=True),
-#             Label("Fase 3 del tutorial:\nRaggiungere la pallina rossa\ncon la mano aperta",
-#                   x=200, y=150, anchor_x='center', anchor_y='center', color=(0, 0, 0, 255), width=280, multiline=True),
-#             Label("Fase 4 del tutorial:\nMuovere la pallina rossa\nverso i pallini blu",
-#                   x=600, y=150, anchor_x='center', anchor_y='center', color=(0, 0, 0, 255), width=280, multiline=True)
-#         ]
-#
-#         # Caricamento dei video
-#         self.players = []
-#         video_files = ["videos/1a.mp4", "videos/2.mp4", "videos/3.mp4", "videos/4.mp4"]
-#         self.video_positions = [(60, 330), (460, 330), (60, 60), (460, 60)]
-#
-#         for i, video_file in enumerate(video_files):
-#             try:
-#                 source = load(video_file)
-#                 player = Player()
-#                 player.queue(source)
-#                 player.play()
-#                 player.volume = 0  # Muta il video per non disturbare
-#                 self.players.append((player, self.video_positions[i]))
-#             except Exception as e:
-#                 print(f"Errore nel caricamento del video {video_file}: {e}")
-#
-#     def on_draw(self):
-#         self.clear()
-#
-#         # Disegna i rettangoli
-#         for rect in self.rectangles:
-#             rect.draw()
-#
-#         # Disegna i testi
-#         for label in self.labels:
-#             label.draw()
-#
-#         # Disegna i video
-#         for player, position in self.players:
-#             player.texture.blit(position[0], position[1])
-#
-# if __name__ == "__main__":
-#     window = TutorialLevel()
-#     pyglet.app.run()
-
-
-# importing pyglet module
 import pyglet
+import cv2
+import numpy as np
 
-# width of window
-width = 500
+# Crea una finestra
+window = pyglet.window.Window()
+window.set_fullscreen(True)
 
-# height of window
-height = 500
+# Percorsi dei video
+video_paths = [
+    "videos/1b.mp4",  # Percorso del primo video
+    "videos/1c.mp4",  # Percorso del secondo video
+    "videos/1d.mp4",  # Percorso del terzo video
+    "videos/1e.mp4"  # Percorso del quarto video
+]
 
-# caption i.e title of the window
-title = "Geeksforgeeks"
+# Crea gli oggetti VideoCapture per ogni video
+caps = [cv2.VideoCapture(path) for path in video_paths]
 
-# creating a window
-window = pyglet.window.Window(width, height, title)
-
-# video path
-vidPath = "videos/1.gif"
-
-# creating a media player object
-player = pyglet.media.Player()
-
-# creating a source object
-source = pyglet.media.StreamingSource()
-
-# load the media from the source
-MediaLoad = pyglet.media.load(vidPath)
-
-# add this media in the queue
-player.queue(MediaLoad)
-
-# play the video
-player.play()
+# Crea una lista per le texture di ogni video
+textures = [None] * len(caps)
 
 
-# on draw event
+# Funzione per aggiornare le texture da OpenCV
+def update_textures():
+    global textures
+    for i, cap in enumerate(caps):
+        ret, frame = cap.read()
+        if not ret:
+            # Se il video è finito, riavvialo dal primo frame
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ret, frame = cap.read()
+        if ret:
+            # Ribalta verticalmente l'immagine
+            frame = cv2.flip(frame, 0)
+
+            # Converti l'immagine in RGB
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Crea la texture usando ImageData
+            image_data = pyglet.image.ImageData(
+                frame.shape[1], frame.shape[0], 'RGB', frame_rgb.tobytes()
+            )
+
+            # Assegna la texture
+            textures[i] = image_data.get_texture()
+
+
 @window.event
 def on_draw():
-    # clear the window
     window.clear()
 
-    # if player source exist
-    # and video format exist
-    if player.source and player.source.video_format:
-        # get the texture of video and
-        # make surface to display on the screen
-        player.get_texture().blit(0, 0)
+    # Disegna il testo sopra i video
+    label = pyglet.text.Label('Questo è un esempio di come deve essere usato l\'applicativo:',
+                              font_name='Arial', font_size=16, x=window.width // 2, y=window.height - 20,
+                              anchor_x='center', anchor_y='center')
+    label.draw()
+
+    # Aggiorna le texture dei video
+    update_textures()
+
+    # Posizioni e dimensioni per ciascun video
+    positions = [
+        (0, 240),  # Video 1 (top-left)
+        (320, 240),  # Video 2 (top-right)
+        (0, 0),  # Video 3 (bottom-left)
+        (320, 0)  # Video 4 (bottom-right)
+    ]
+    sizes = [
+        (320, 240),  # Video 1 dimensione
+        (320, 240),  # Video 2 dimensione
+        (320, 240),  # Video 3 dimensione
+        (320, 240)  # Video 4 dimensione
+    ]
+    labels = [
+        "Passo 1",  # Etichetta per il primo video
+        "Passo 2",  # Etichetta per il secondo video
+        "Passo 3",  # Etichetta per il terzo video
+        "Passo 4"  # Etichetta per il quarto video
+    ]
+
+    # Colori dei rettangoli
+    colors = [
+        (255, 0, 0),  # Rosso
+        (0, 255, 0),  # Verde
+        (0, 0, 255),  # Blu
+        (255, 255, 0)  # Giallo
+    ]
+
+    # Disegna ogni video in un rettangolo colorato usando pyglet.shapes.Rectangle
+    for i, texture in enumerate(textures):
+        if texture:
+            # Disegna il rettangolo colorato sotto il video
+            x, y = positions[i]
+            width, height = sizes[i]
+
+            # Crea il rettangolo colorato
+            rectangle = pyglet.shapes.Rectangle(x, y, width, height, color=colors[i])
+            rectangle.draw()
+
+            # Disegna la texture del video sopra il rettangolo colorato
+            texture.blit(x, y, width=width, height=height)
+
+            # Disegna l'etichetta "Passo X" sotto il video
+            label = pyglet.text.Label(labels[i],
+                                      font_name='Arial', font_size=14, x=x + width // 2, y=y - 20,
+                                      anchor_x='center', anchor_y='center')
+            label.draw()
+
+    # Disegna il testo sotto i video
+    label2 = pyglet.text.Label('Premi [spazio] per continuare, [T] per avviare il tutorial',
+                               font_name='Arial', font_size=14, x=window.width // 2, y=40,
+                               anchor_x='center', anchor_y='center')
+    label2.draw()
 
 
-# key press event
+# Gestisci gli eventi da tastiera
 @window.event
-def on_key_press(symbol, modifier):
-    # key "p" get press
-    if symbol == pyglet.window.key.P:
-        # pause the video
-        player.pause()
-
-        # printing message
-        print("Video is paused")
-
-    # key "r" get press
-    if symbol == pyglet.window.key.R:
-        # resume the video
-        player.play()
-
-        # printing message
-        print("Video is resumed")
+def on_key_press(symbol, modifiers):
+    if symbol == pyglet.window.key.SPACE:
+        print("Continuando...")
+        # Aggiungi qui la logica per continuare
+    elif symbol == pyglet.window.key.T:
+        print("Avviando il tutorial...")
+        # Aggiungi qui la logica per avviare il tutorial
 
 
-# run the pyglet application
+# Avvia il loop principale di Pyglet
 pyglet.app.run()
+
+# Rilascia le risorse quando il programma termina
+for cap in caps:
+    cap.release()

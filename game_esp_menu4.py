@@ -5,6 +5,7 @@ import time
 import math
 
 import game_levels
+import game_levels_tutorial_show
 import game_levels_tutorial
 from  settings import *
 
@@ -52,6 +53,7 @@ class Window(pyglet.window.Window):
             game_levels.Tutorial1(pipe_conn),
             game_levels.Tutorial2(pipe_conn),
             game_levels.Tutorial3_1(pipe_conn),
+            game_levels_tutorial_show.Tutorial4(pipe_conn),
             game_levels_tutorial.LevelTutorialPath(pipe_conn),
             game_levels.LevelFollowPath1(pipe_conn),
             game_levels.LevelFollowPath2(pipe_conn),
@@ -60,7 +62,7 @@ class Window(pyglet.window.Window):
         ]
         self.current_state = 0
         self.old_state = None  # Nessun livello precedente all'inizio
-        self.tutorial_index = 3  # Indice del livello tutorial
+        self.tutorial_index = 4  # Indice del livello tutorial
         self.set_visible()
 
         # Schedule updates for active scene
