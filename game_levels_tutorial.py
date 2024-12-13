@@ -249,6 +249,7 @@ class Tutorial_FollowPath(SceneTemplate):
         #self.first_checkpoint_reached_time_elapsed = 0.0
         self.path = []  # Resetta il percorso del pallino
 
+
     def stop_game(self):
         """Ferma il gioco e calcola l'accuratezza."""
         self.timer_running = False
@@ -427,6 +428,10 @@ class Tutorial_FollowPath(SceneTemplate):
         #[False, False, False]
         self.checkpoint_shapes[0].color = (0, 0, 200)  # evidenziamo il primo checkpoint da prendere
 
+        self.circle.visible = False
+
+
+
     def update(self, dt):
         """Aggiorna la posizione del pallino e il timer."""
         # Riceve dati dalla pipe e aggiorna la posizione
@@ -497,6 +502,7 @@ class Tutorial_FollowPath(SceneTemplate):
                     self.tutorial1_hand_was_seen = True
 
                     if self.tutorial1_hand_was_seen and self.tutorial1_hand_over_redpoint == False:
+                        self.circle.visible = True
                         #Abilita la nuova schermata
                         label_tutorial = (
                             f"SECONDO PASSO:\n"  # Titolo grande
