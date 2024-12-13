@@ -91,7 +91,7 @@ class Tutorial1(SceneTemplate):
             "Benvenuto nel Sistema di Riabilitazione\n"
             "Preparati a migliorare i movimenti delle mani e delle braccia "
             "attraverso un percorso interattivo a livelli.\n\n"
-            "Premi SPAZIO per iniziare!"
+            "Premi [SPAZIO] per iniziare, [I] per tornare indietro!"
         )
         welcome_document.set_style(0, 9, {'font_size': 36, 'bold': True,
                                           'color': (255, 255, 0, 255)})  # Stile per "Benvenuto"
@@ -123,7 +123,7 @@ class Tutorial2(SceneTemplate):
         gameplay_document.text = (
             "In questo gioco, controllerai un'entità tramite i "
             "gesti della mano.\nUna pallina rossa apparirà sullo schermo e dovrai farla muovere con i tuoi movimenti.\n\n"
-            "Premi SPAZIO per continuare!"
+            "Premi [SPAZIO] per continuare, [I] per tornare indietro."
         )
         # Evidenzia "gesti della mano"
         gameplay_document.set_style(48, 66, {'font_size': 24, 'bold': True,
@@ -176,7 +176,7 @@ class Tutorial3(SceneTemplate):
             "Esempio di esercizio:\n1)Posiziona una delle tue mani davanti alla fotocamera.\n"
             "2) Apri il palmo per far muovere la pallina rossa,\n3)chiudi il palmo per fermarla o cambiare direzione.\n\n"
             "L'obiettivo è spostare la pallina rossa attraverso i checkpoint (pallini blu), rimanendo nel box.\n"
-            "Premi SPAZIO per continuare tra i livelli, [P] per avviare il livello."
+            "Premi SPAZIO per continuare tra i livelli, [P] per avviare il livello, [I] per tornare indietro."
         )
 
         # Impostazioni degli stili per la formattazione del testo
@@ -244,7 +244,7 @@ class Tutorial3_1(SceneTemplate):
             "Esempio di esercizio:\n1) Posiziona una delle tue mani davanti alla fotocamera.\n"
             "2) Apri il palmo per far muovere la pallina rossa,\n3) chiudi il palmo per fermarla o cambiare direzione.\n\n"
             "L'obiettivo è spostare la pallina rossa attraverso i checkpoint (pallini blu), rimanendo nel box.\n"
-            "Premi SPAZIO per spostarti tra un livello e l'altro."
+            "Premi [SPAZIO] per spostarti tra un livello e l'altro, [I] per tornare indietro."
         )
 
         # Impostazioni degli stili per la formattazione del testo
@@ -650,7 +650,7 @@ class Exercise_FollowPath(SceneTemplate):
                 label_winning = (
                     "SUCCESSO\n"  # Titolo grande
                     f"Hai completato il percorso in {self.timer_label.text[12:]} secondi e con una accuratezza del {float(accuracy):.2%}!. "
-                    "\nPremi [spazio] per andare al prossimo livello; [Q] Esci; [R] Rigioca il livello attuale."
+                    "\nPremi [Spazio] per andare al prossimo livello; [I] per tornare indietro; [Q] Esci; [R] Rigioca il livello attuale."
                 )
                 self.text_layout_success.document.text = label_winning
                 self.document_success.set_style(0, 8, {'font_size': 80, 'color': (0, 255, 0, 255), 'bold': True, 'align': 'center',
@@ -1085,7 +1085,7 @@ class FinalScene(SceneTemplate):
                                           x=width // 2, y=height // 2 + 100,
                                           anchor_x='center', anchor_y='center', color=(255, 255, 255, 255), batch=self.batch)
 
-        self.next_steps_text = pyglet.text.Label("Premi SPAZIO per ripetere le sfide\nPremi Q per uscire.",
+        self.next_steps_text = pyglet.text.Label("Premi SPAZIO per ripetere le sfide\nPremi Q per uscire, I per tornare indietro.",
                                             font_name='Arial', font_size=18,
                                             x=width // 2, y=height // 2 - 50,
                                             anchor_x='center', anchor_y='center', color=(255, 255, 255, 255),

@@ -221,7 +221,7 @@ class Tutorial4(SceneTemplate):
                 # #self.label.draw()
 
         # Disegna il testo sotto i video
-        self.label2 = pyglet.text.Label('Premi [spazio] per continuare, [T] per avviare il tutorial (e poi nuovamente [T] per uscirne)',
+        self.label2 = pyglet.text.Label('Premi [spazio] per continuare, [T] per avviare il tutorial (e poi nuovamente [T] per uscirne), [I] per tornare indietro.',
                                    font_name='Arial', font_size=14, x=settings.width // 2, y=40,
                                    anchor_x='center', anchor_y='center', batch=self.batch)
         #label2.draw()

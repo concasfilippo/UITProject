@@ -105,6 +105,11 @@ class Window(pyglet.window.Window):
             print(f"Switched to scene {self.current_state}")
 
         # Inoltra gli altri tasti alla scena corrente
+        elif symbol == key.I:
+            if self.current_state != 0 and self.current_state != self.tutorial_index + 1:
+                self.current_state = (self.current_state - 1) % len(self.states)
+            elif self.current_state == self.tutorial_index + 1:
+                self.current_state = (self.current_state - 2) % len(self.states)
         else:
             self.states[self.current_state].handle_key(symbol, modifiers)
 

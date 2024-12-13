@@ -1,7 +1,7 @@
 default_camera = 0
 
 visible_mediapipe_camera = False #booleano per far vedere la finestra di mediapipe
-is_fullscreen = False #booleano per indicare se debba andare in fullscreen
+is_fullscreen = True #booleano per indicare se debba andare in fullscreen
 
 import tkinter as tk
 root = tk.Tk()
