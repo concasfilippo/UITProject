@@ -89,8 +89,9 @@ class Tutorial1(SceneTemplate):
         welcome_document = pyglet.text.document.FormattedDocument()
         welcome_document.text = (
             "Benvenuto nel Sistema di Riabilitazione\n"
-            "Preparati a migliorare i movimenti delle mani e delle braccia "
-            "attraverso un percorso interattivo a livelli.\n\n"
+            "Preparati alla riabilitazione dell'articolazione della spalla "
+            "attraverso movimenti delle braccia e delle mani "
+            "ed un percorso interattivo a livelli.\n\n"
             "Premi [SPAZIO] per iniziare, [I] per tornare indietro!"
         )
         welcome_document.set_style(0, 9, {'font_size': 36, 'bold': True,
@@ -244,6 +245,7 @@ class Tutorial3_1(SceneTemplate):
             "Esempio di esercizio:\n1) Posiziona una delle tue mani davanti alla fotocamera.\n"
             "2) Apri il palmo per far muovere la pallina rossa,\n3) chiudi il palmo per fermarla o cambiare direzione.\n\n"
             "L'obiettivo è spostare la pallina rossa attraverso i checkpoint (pallini blu), rimanendo nel box.\n"
+            "Per un esperienza migliore,ti consigliamo di stare a circa un metro dalla fotocamera.\n"
             "Premi [SPAZIO] per spostarti tra un livello e l'altro, [I] per tornare indietro."
         )
 
@@ -261,7 +263,7 @@ class Tutorial3_1(SceneTemplate):
             width=(width // 2) - 100,
             multiline=True,
             x=50,
-            y=height - 250,
+            y=height - 330,
             batch=self.batch
         )
 
