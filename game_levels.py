@@ -88,7 +88,7 @@ class Tutorial1(SceneTemplate):
         # Documento del testo di benvenuto
         welcome_document = pyglet.text.document.FormattedDocument()
         welcome_document.text = (
-            "Benvenuto nel Sistema di Riabilitazione\n"
+            "Benvenuto nel Sistema di Riabilitazione GestRehab\n"
             "Preparati alla riabilitazione dell'articolazione della spalla "
             "attraverso movimenti delle braccia e delle mani "
             "ed un percorso interattivo a livelli.\n\n"
