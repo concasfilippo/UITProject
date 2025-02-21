@@ -361,6 +361,7 @@ class Exercise_FollowPath(SceneTemplate):
 
         self.bg_group = Group(order=0)
         self.fg_group = Group(order=1)
+        self.first_play = True
 
         flag = True
         while flag:
@@ -406,15 +407,15 @@ class Exercise_FollowPath(SceneTemplate):
 
         self.timer_remaining_label = pyglet.text.Label(
             "Tempo rimanente: 0.0", font_name="Arial", font_size=16,
-            color=(255, 255, 255, 255), x=10, y=height - 40, batch=self.batch, group=self.fg_group)
+            color=color_used, x=10, y=height - 40, batch=self.batch, group=self.fg_group)
 
         self.label_instructions = pyglet.text.Label(  # label livello
             "Premi [Enter] per iniziare, [R] per ricominciare il livello, [P] per mettere in pausa.", font_name="Arial", font_size=16,
-            color=(255, 255, 255, 255), x=10, y=height - 20, batch=self.batch, group=self.fg_group)
+            color=color_used, x=10, y=height - 20, batch=self.batch, group=self.fg_group)
 
         self.label_level = pyglet.text.Label( #label livello
             level_title, font_name="Arial", font_size=16,
-            color=(255, 255, 255, 255), x=10, y=height - 20, batch=self.batch, group=self.fg_group)
+            color=color_used, x=10, y=height - 20, batch=self.batch, group=self.fg_group)
         self.label_level.visible = False
 
         self.label_gesture = pyglet.text.Label( #gesto rilevato
@@ -430,7 +431,7 @@ class Exercise_FollowPath(SceneTemplate):
         self.path = []  # Lista di coordinate tracciate dal pallino
         self.accuracy_label = pyglet.text.Label(
             "", font_name="Arial", font_size=16,
-            color=(255, 255, 255, 255), x=10, y=height - 80, batch=self.batch, group=self.fg_group)
+            color=color_used, x=10, y=height - 80, batch=self.batch, group=self.fg_group)
         self.accuracy_label.visible = False
 
         #checkpoint logic (defined as centroid of each triangle)
@@ -474,7 +475,7 @@ class Exercise_FollowPath(SceneTemplate):
                                   'font_name': 'Arial'})
         # Stile per il resto del testo
         self.document_success.set_style(8, len(self.document_success.text),
-                                        {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                        {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
         # Usa un layout per il testo
         self.text_layout_success = pyglet.text.layout.TextLayout(
             document=self.document_success,
@@ -513,7 +514,7 @@ class Exercise_FollowPath(SceneTemplate):
                                          'font_name': 'Arial'})
         # Stile per il resto del testo
         self.pause_document.set_style(5, len(self.pause_document.text),
-                                        {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                        {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
         # Usa un layout per il testo
         self.text_layout_pause = pyglet.text.layout.TextLayout(
             document=self.pause_document,
@@ -561,7 +562,7 @@ class Exercise_FollowPath(SceneTemplate):
                                        'font_name': 'Arial'})
         # Stile per il resto del testo
         self.chosediff_document.set_style(11, len(self.chosediff_document.text),
-                                      {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                      {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
         # Usa un layout per il testo
         self.text_layout_chosediff = pyglet.text.layout.TextLayout(
             document=self.chosediff_document,
@@ -587,6 +588,7 @@ class Exercise_FollowPath(SceneTemplate):
         self.time_elapsed = 0.0
         self.first_checkpoint_reached_time_elapsed = 0.0
         self.path = []  # Resetta il percorso del pallino
+        self.first_checkpoint_not_reached = True
 
     def stop_game(self):
         """Ferma il gioco e calcola l'accuratezza."""
@@ -660,7 +662,7 @@ class Exercise_FollowPath(SceneTemplate):
                 self.document_success.set_style(0, 8, {'font_size': 80, 'color': (0, 255, 0, 255), 'bold': True, 'align': 'center',
                                                'font_name': 'Arial'})
                 self.document_success.set_style(8, len(self.document_success.text),
-                                                {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                                {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
 
                 if is_end_level_audio_enabled:
                     sound = pyglet.media.load('sounds/win.wav', streaming=False)
@@ -684,7 +686,7 @@ class Exercise_FollowPath(SceneTemplate):
                                                        'align': 'center',
                                                        'font_name': 'Arial'})
                 self.document_success.set_style(8, len(self.document_success.text),
-                                                {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                                {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
 
                 if is_end_level_audio_enabled:
                     sound = pyglet.media.load('sounds/lose.wav', streaming=False)
@@ -700,9 +702,9 @@ class Exercise_FollowPath(SceneTemplate):
             self.document_success.set_style(0, 8, {'font_size': 80, 'color': (255, 0, 0, 255), 'bold': True,
                                                    'align': 'center',
                                                    'font_name': 'Arial'})
-            self.document_success.set_style(8, len(self.document_success.text),
-                                            {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
 
+            self.document_success.set_style(8, len(self.document_success.text),
+                                            {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
             if is_end_level_audio_enabled:
                 sound = pyglet.media.load('sounds/lose.wav', streaming=False)
                 sound.play()
@@ -762,6 +764,9 @@ class Exercise_FollowPath(SceneTemplate):
     def update(self, dt):
         """Aggiorna la posizione del pallino e il timer."""
         # Riceve dati dalla pipe e aggiorna la posizione
+        if self.first_play:
+            self.reset_game()
+            self.first_play = False
         if self.pipe_conn.poll():
             informazioni = self.pipe_conn.recv()
 
@@ -782,12 +787,15 @@ class Exercise_FollowPath(SceneTemplate):
                 sprites = [new_sprite]  # Add the new sprite to the list
 
             if self.timer_running:
-                self.time_elapsed += (dt * 3.8) #il programma è cosi lento che serve un moltiplicatore
+                time_remaining = self.time_elapsed
+                #self.time_elapsed += (dt * 3.8) #il programma è cosi lento che serve un moltiplicatore
                 self.timer_label.text = f"Cronometro: {self.time_elapsed:.1f}"
 
-                time_remaining = self.time_elapsed #valore base che aggiorneremo
+                #time_remaining = self.time_elapsed #valore base che aggiorneremo
                 time_level = self.difficulty_times[self.level_difficulty_chosen]
                 if not self.first_checkpoint_not_reached:
+                    self.time_elapsed += (dt * 3.8)
+                    #time_remaining = self.time_elapsed
                     time_remaining = time_level-self.time_elapsed
 
                     if time_remaining > 0:
@@ -926,7 +934,7 @@ class Exercise_FollowPath(SceneTemplate):
 
 
 
-    def handle_key(self, symbol, modifiers):
+    def on_key_press(self, symbol, modifiers):
         # Scelta difficoltà facile
         if symbol == key._1:
             self.level_difficulty_chosen = 'facile'             #{'facile': 30.0, 'medio':20.0, 'difficile': 8}
@@ -959,7 +967,7 @@ class Exercise_FollowPath(SceneTemplate):
             self.text_layout_pause.visible = False
 
             self.reset_game()
-            #self.start_game()
+
 
         if symbol == key.ENTER and not self.timer_running:
             self.text_layout_chosediff.visible = False
@@ -985,12 +993,30 @@ class Exercise_FollowPath(SceneTemplate):
                 #print("Hai tentato di continuare il gioco")
 
                 #mettiamo un countdown di qualche secondo prima di far continuare
+                print("gatto")
                 self.timer_running = True
                 self.pause_rectangle.visible = False
                 self.text_layout_pause.visible = False
 
                 self.success_rectangle.visible = False
                 self.text_layout_success.visible = False
+                self.first_checkpoint_not_reached = True
+        if symbol == key.SPACE:
+            self.text_layout_chosediff.visible = True
+            self.chosediff_rectangle.visible = True
+
+            self.pause_rectangle.visible = False
+            self.text_layout_pause.visible = False
+
+            self.reset_game()
+        if symbol == key.I:
+            self.text_layout_chosediff.visible = True
+            self.chosediff_rectangle.visible = True
+
+            self.pause_rectangle.visible = False
+            self.text_layout_pause.visible = False
+
+            self.reset_game()
 
 
 

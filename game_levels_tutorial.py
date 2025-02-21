@@ -68,11 +68,11 @@ class Tutorial_FollowPath(SceneTemplate):
 
         self.label_instructions = pyglet.text.Label(  # label livello
             "Premi [Enter] per iniziare, [R] per ricominciare il livello, [P] per mettere in pausa.", font_name="Arial", font_size=16,
-            color=(255, 255, 255, 255), x=10, y=height - 20, batch=self.batch, group=self.fg_group)
+            color=color_used, x=10, y=height - 20, batch=self.batch, group=self.fg_group)
 
         self.label_level = pyglet.text.Label( #label livello
             level_title, font_name="Arial", font_size=16,
-            color=(255, 255, 255, 255), x=10, y=height - 20, batch=self.batch, group=self.fg_group)
+            color=color_used, x=10, y=height - 20, batch=self.batch, group=self.fg_group)
         self.label_level.visible = False
 
         self.label_gesture = pyglet.text.Label( #gesto rilevato
@@ -135,7 +135,7 @@ class Tutorial_FollowPath(SceneTemplate):
                                   'font_name': 'Arial'})
         # Stile per il resto del testo
         self.document_success.set_style(8, len(self.document_success.text),
-                                        {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                        {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
         # Usa un layout per il testo
         self.text_layout_success = pyglet.text.layout.TextLayout(
             document=self.document_success,
@@ -174,7 +174,7 @@ class Tutorial_FollowPath(SceneTemplate):
                                          'font_name': 'Arial'})
         # Stile per il resto del testo
         self.pause_document.set_style(5, len(self.pause_document.text),
-                                        {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                        {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
         # Usa un layout per il testo
         self.text_layout_pause = pyglet.text.layout.TextLayout(
             document=self.pause_document,
@@ -218,11 +218,11 @@ class Tutorial_FollowPath(SceneTemplate):
         self.tutorial1_document.text = label_tutorial1
         # Stile per "SUCCESSO"
         self.tutorial1_document.set_style(0, 12,
-                                          {'font_size': 80, 'color': (0, 255, 255, 255), 'bold': True, 'align': 'center',
+                                          {'font_size': 80, 'color': (0,255,255,255), 'bold': True, 'align': 'center',
                                        'font_name': 'Arial'})
         # Stile per il resto del testo
         self.tutorial1_document.set_style(12, len(self.tutorial1_document.text),
-                                          {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                          {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
         # Usa un layout per il testo
         self.text_layout_tutorial1 = pyglet.text.layout.TextLayout(
             document=self.tutorial1_document,
@@ -330,7 +330,7 @@ class Tutorial_FollowPath(SceneTemplate):
                 self.document_success.set_style(0, 8, {'font_size': 80, 'color': (0, 255, 0, 255), 'bold': True, 'align': 'center',
                                                'font_name': 'Arial'})
                 self.document_success.set_style(8, len(self.document_success.text),
-                                                {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                                {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
 
                 if is_end_level_audio_enabled:
                     sound = pyglet.media.load('sounds/win.wav', streaming=False)
@@ -418,7 +418,7 @@ class Tutorial_FollowPath(SceneTemplate):
                                            'font_name': 'Arial'})
 
         self.tutorial1_document.set_style(12, len(self.tutorial1_document.text),
-                                          {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                          {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
 
         for cp in range(0, len(self.checkpoint_shapes)):
             self.checkpoint_shapes[cp].color = (200, 0, 0)
@@ -514,7 +514,7 @@ class Tutorial_FollowPath(SceneTemplate):
                                                                'align': 'center',
                                                                'font_name': 'Arial'})
                         self.tutorial1_document.set_style(14, len(self.document_success.text),
-                                                        {'font_size': 32, 'color': (255, 255, 255, 255), 'font_name': 'Arial'})
+                                                        {'font_size': 32, 'color': color_used, 'font_name': 'Arial'})
 
 
 
@@ -566,7 +566,7 @@ class Tutorial_FollowPath(SceneTemplate):
                                                                'align': 'center',
                                                                'font_name': 'Arial'})
                             self.tutorial1_document.set_style(12, len(self.document_success.text),
-                                                              {'font_size': 32, 'color': (255, 255, 255, 255),
+                                                              {'font_size': 32, 'color': color_used,
                                                                'font_name': 'Arial'})
 
 
@@ -615,7 +615,7 @@ class Tutorial_FollowPath(SceneTemplate):
                                                                'align': 'center',
                                                                'font_name': 'Arial'})
                             self.tutorial1_document.set_style(13, len(self.document_success.text),
-                                                              {'font_size': 32, 'color': (255, 255, 255, 255),
+                                                              {'font_size': 32, 'color': color_used,
                                                                'font_name': 'Arial'})
 
                         self.checkpoints_reached[i] = True
@@ -632,7 +632,7 @@ class Tutorial_FollowPath(SceneTemplate):
 
 
 
-    def handle_key(self, symbol, modifiers):
+    def on_key_press(self, symbol, modifiers):
         # Scelta difficoltà facile
         if symbol == key._1:
             self.level_difficulty_chosen = 'facile'             #{'facile': 30.0, 'medio':20.0, 'difficile': 8}

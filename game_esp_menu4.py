@@ -90,6 +90,13 @@ class Window(pyglet.window.Window):
 
         # Gestione del tasto SPACE per ciclare i livelli
         elif symbol == key.SPACE:
+            if self.current_state in self.states[5:-2]:
+                self.states[self.current_state].text_layout_tutorial1.visible = True
+                self.states[self.current_state].tutorial1_rectangle.visible = True
+
+                self.states[self.current_state].pause_rectangle.visible = False
+                self.states[self.current_state].text_layout_pause.visible = False
+                self.states[self.current_state].reset_game()
             if self.current_state == self.tutorial_index and self.old_state is not None:
                 # Se siamo nel tutorial e c'era un livello precedente, torna a quello
                 self.current_state = self.old_state
@@ -106,12 +113,20 @@ class Window(pyglet.window.Window):
 
         # Inoltra gli altri tasti alla scena corrente
         elif symbol == key.I:
+            if self.current_state in self.states[5:-2]:
+                self.states[self.current_state].text_layout_tutorial1.visible = True
+                self.states[self.current_state].tutorial1_rectangle.visible = True
+
+                self.states[self.current_state].pause_rectangle.visible = False
+                self.states[self.current_state].text_layout_pause.visible = False
+                self.states[self.current_state].reset_game()
+
             if self.current_state != 0 and self.current_state != self.tutorial_index + 1:
                 self.current_state = (self.current_state - 1) % len(self.states)
             elif self.current_state == self.tutorial_index + 1:
                 self.current_state = (self.current_state - 2) % len(self.states)
         else:
-            self.states[self.current_state].handle_key(symbol, modifiers)
+            self.states[self.current_state].on_key_press(symbol, modifiers)
 
     def update(self, dt):
         """Update the current scene."""

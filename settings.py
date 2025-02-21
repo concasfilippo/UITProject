@@ -2,6 +2,12 @@ default_camera = 0
 
 visible_mediapipe_camera = False #booleano per far vedere la finestra di mediapipe
 is_fullscreen = True #booleano per indicare se debba andare in fullscreen
+white_bg =False
+
+if white_bg:
+    color_used = (0, 0, 0, 255)
+else:
+    color_used = (255, 255, 255, 255)
 
 import tkinter as tk
 root = tk.Tk()
